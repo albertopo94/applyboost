@@ -42,3 +42,4 @@ gen-lang-client-*.json
 *.tsbuildinfo
 next-env.d.ts
 documentacion-negocio/
+.playwright-mcp/
