@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # --- Database (PostgreSQL) ---
+  db:
+    container_name: supabase-db
+    image: supabase/postgres:15.1.0.147
+    command: 
+      - postgres 
+      - -c
+      - max_connections=200
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=1536MB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=128MB
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- Auth (GoTrue) ---
+  auth:
+    container_name: supabase-auth
+    image: supabase/gotrue:v2.132.3
+    depends_on:
+      - db
+    environment:
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres?sslmode=disable
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      GOTRUE_OPERATOR_TOKEN: ${OPERATOR_TOKEN:-token}
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: 'true'
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${SITE_URL:-http://localhost:3000}/auth/callback
+      GOTRUE_JWT_SECRET: ${JWT_SECRET:-secret}
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_DB_MAX_POOL_SIZE: 30
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- API (PostgREST) ---
+  rest:
+    container_name: supabase-rest
+    image: postgrest/postgrest:v12.0.2
+    depends_on:
+      - db
+    environment:
+      PGRST_DB_URI: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET:-secret}
+      PGRST_DB_USE_PGRST_ROLE: 'false'
+      PGRST_DB_MAX_ROWS: 1000
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- Storage ---
+  storage:
+    container_name: supabase-storage
+    image: supabase/storage-api:v0.43.10
+    depends_on:
+      - db
+      - rest
+    environment:
+      ANON_KEY: ${ANON_KEY}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET:-secret}
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+    volumes:
+      - supabase_storage:/var/lib/storage
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- Realtime ---
+  realtime:
+    container_name: supabase-realtime
+    image: supabase/realtime:v2.25.22
+    depends_on:
+      - db
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime, public'
+      SECRET_KEY_BASE: ${JWT_SECRET:-secret}
+      ERL_AFLAGS: "-proto_dist inet6_tcp"
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- Meta (Database Management API) ---
+  meta:
+    container_name: supabase-meta
+    image: supabase/postgres-meta:v0.68.0
+    depends_on:
+      - db
+    environment:
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: postgres
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PG_META_DB_SSL_MODE: disable
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+  # --- Gateway (Kong) ---
+  kong:
+    container_name: supabase-kong
+    image: kong:2.8.1-alpine
+    depends_on:
+      - auth
+      - rest
+      - storage
+    environment:
+      KONG_DATABASE: 'off'
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 'off'
+    volumes:
+      - ./supabase/snippets/kong.yml:/var/lib/kong/kong.yml:ro
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+    networks:
+      - supabase_network
+    restart: unless-stopped
+
+networks:
+  supabase_network:
+    driver: bridge
+
+volumes:
+  supabase_db_data:
+  supabase_storage:

@@ -1,0 +1,73 @@
+{
+  "header": {
+    "title": "ApplyBoost",
+    "new_optimization": "Nuova ottimizzazione"
+  },
+  "hero": {
+    "title_1": "Candidati meglio.",
+    "title_2": "Ottieni più colloqui.",
+    "subtitle": "Incolla un'offerta di lavoro. Ricevi un CV e una lettera di presentazione su misura in pochi secondi — ottimizzati per l'ATS e pronti da inviare.",
+    "cta": "Ottimizza e Genera",
+    "trust": "I tuoi dati non vengono salvati in modo permanente senza permesso.",
+    "step1": "Carica il tuo attuale CV",
+    "step2": "Incolla l'offerta di lavoro",
+    "step3": "Ottieni subito una versione ottimizzata"
+  },
+  "wizard": {
+    "step1_title": "Il tuo Curriculum",
+    "upload_cta": "Carica PDF o DOCX",
+    "or_paste": "O incolla il testo",
+    "cv_placeholder": "Incolla qui il contenuto del tuo CV...",
+    "step2_title": "L'Offerta di Lavoro",
+    "url_placeholder": "URL dell'offerta (LinkedIn, Infojobs...)",
+    "or_description": "O incolla la descrizione",
+    "job_placeholder": "Incolla la descrizione completa del lavoro...",
+    "error_cv": "Abbiamo bisogno del tuo CV (PDF o testo incollato).",
+    "error_job": "Aggiungi l'URL dell'offerta o incolla direttamente il testo.",
+    "error_scraper_blocked": "Non siamo riusciti a leggere i dettagli del lavoro da questo link. Incolla la descrizione manualmente qui sotto.",
+    "optimizing": "Ottimizzazione CV in corso..."
+  },
+  "spinners": [
+    "Il tuo CV, ottimizzato per ogni lavoro",
+    "Trasforma il tuo CV in colloqui",
+    "Dalla candidatura al colloquio — più velocemente"
+  ],
+  "editor": {
+    "ats_score": "Punteggio ATS",
+    "ats_subtitle": "Miglioramento parole chiave per il successo.",
+    "original": "Originale",
+    "optimized": "Ottimizzato",
+    "missing_data": "Dati mancanti nel tuo CV",
+    "missing_desc": "Cerca nel testo la parola 'FALTA_DATO'. Completala manualmente per una maggiore precisione prima del download.",
+    "preview": "Anteprima CV",
+    "editable": "Modificabile",
+    "saving": "Salvataggio...",
+    "saved": "Salvato",
+    "save_error": "Errore di salvataggio",
+    "error": "Errore di salvataggio",
+    "export_title": "Esporta CV",
+    "export_subtitle": "Scarica la versione finale. Puoi fare gli ultimi aggiustamenti direttamente nell'editor.",
+    "download_pdf": "Scarica PDF",
+    "price_docx": "Controlla il prezzo in DOCX",
+    "export_trust": "Pagamento unico. I tuoi dati vengono cancellati alla chiusura.",
+    "changes_title": "Cosa abbiamo cambiato?",
+    "changes_subtitle": "Miglioramenti mirati al successo dell'ATS.",
+    "tabs": {
+      "cv": "Curriculum Vitae",
+      "cover_letter": "Lettera di Presentazione"
+    },
+    "sidebar": {
+      "explanation": "Analisi dell'Esperto",
+      "changes": "Cronologia Modifiche"
+    },
+    "actions": {
+      "download_cv": "Scarica CV",
+      "download_cl": "Scarica Lettera"
+    }
+  },
+  "stats": {
+    "views": "Visite",
+    "generated": "Generati",
+    "downloaded": "Scaricati"
+  }
+}

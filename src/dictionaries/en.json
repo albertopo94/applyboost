@@ -1,0 +1,73 @@
+{
+  "header": {
+    "title": "ApplyBoost",
+    "new_optimization": "New optimization"
+  },
+  "hero": {
+    "title_1": "Apply smarter.",
+    "title_2": "Get more interviews.",
+    "subtitle": "Paste a job offer. Get a tailored CV and cover letter in seconds — optimized for ATS and ready to send.",
+    "cta": "Optimize & Generate",
+    "trust": "Your data is not permanently saved without permission.",
+    "step1": "Upload your current CV",
+    "step2": "Paste the job offer",
+    "step3": "Get an optimized version instantly"
+  },
+  "wizard": {
+    "step1_title": "Your Resume",
+    "upload_cta": "Upload PDF or DOCX",
+    "or_paste": "Or paste text",
+    "cv_placeholder": "Paste your CV content here...",
+    "step2_title": "The Job Offer",
+    "url_placeholder": "Job URL (LinkedIn, Infojobs...)",
+    "or_description": "Or paste description",
+    "job_placeholder": "Paste the full job description...",
+    "error_cv": "We need your CV (PDF or pasted text).",
+    "error_job": "Add the job URL or paste the text directly.",
+    "error_scraper_blocked": "We couldn't read the job details from this link. Please paste the description manually below.",
+    "optimizing": "Optimizing CV..."
+  },
+  "spinners": [
+    "Your CV, optimized for every job",
+    "Turn your CV into interviews",
+    "From application to interview — faster"
+  ],
+  "editor": {
+    "ats_score": "ATS Score",
+    "ats_subtitle": "Keyword improvement for success.",
+    "original": "Original",
+    "optimized": "Optimized",
+    "missing_data": "Missing data in your CV",
+    "missing_desc": "Check the text for the word 'FALTA_DATO'. Complete it manually for better accuracy before downloading.",
+    "preview": "CV Preview",
+    "editable": "Editable",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "save_error": "Save error",
+    "error": "Save error",
+    "export_title": "Export CV",
+    "export_subtitle": "Download your final version. You can make final adjustments directly in the editor.",
+    "download_pdf": "Download PDF",
+    "price_docx": "Check DOCX price",
+    "export_trust": "One-time payment. Your data is deleted upon closing.",
+    "changes_title": "What did we change?",
+    "changes_subtitle": "Improvements aimed at ATS success.",
+    "tabs": {
+      "cv": "Curriculum Vitae",
+      "cover_letter": "Cover Letter"
+    },
+    "sidebar": {
+      "explanation": "Expert Insights",
+      "changes": "Audit Trail"
+    },
+    "actions": {
+      "download_cv": "Download CV",
+      "download_cl": "Download Letter"
+    }
+  },
+  "stats": {
+    "views": "Views",
+    "generated": "Generated",
+    "downloaded": "Downloaded"
+  }
+}
