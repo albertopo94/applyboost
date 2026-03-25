@@ -25,12 +25,18 @@ yarn-error.log*
 bun-debug.log*
 
 # Environment files — CRITICAL: never commit secrets (SDD §9.2, Stack §🔑)
-.env
 .env.*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+!.env.example
+.env.*
+!.env.example
+.env.*
+!.env.example
+.env.*
+!.env.example
+.env.*
+!.env.example
+.env.*
+!.env.example
 
 # Google Cloud credentials (should never be in repo)
 gen-lang-client-*.json
@@ -40,6 +46,7 @@ gen-lang-client-*.json
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
+next.env.*
+!.env.example
 documentacion-negocio/
 .playwright-mcp/
