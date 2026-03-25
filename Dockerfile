@@ -32,12 +32,10 @@ COPY package.json bun.lock ./
 RUN bun install
 
 COPY . .
-# Ensure we have the standalone output configuration
-# Next.js 15 requires specific environment variables during build if they affect the client
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Create a temporary .env.production to ensure Next.js finds the NEXT_PUBLIC variables during build
+# This bypasses issues where Dokploy does not pass ARG variables to the build context
+RUN echo "NEXT_PUBLIC_SUPABASE_URL=https://otpyrwkjpareekcftbhj.supabase.co\nNEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk" > .env.production
 
 # Limit Node memory to prevent OOM freezes during build on VPS
 ENV NODE_OPTIONS="--max-old-space-size=2048"
