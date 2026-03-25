@@ -41,3 +41,4 @@ gen-lang-client-*.json
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+documentacion-negocio/
