@@ -1,9 +1,9 @@
 # Stage 1: Dependencies and System Libraries
-FROM oven/bun:1.3-slim AS base
+FROM oven/bun:latest AS base
 WORKDIR /app
 
-# Install dependencies for Chromium and Puppeteer
-RUN apt-get update && apt-get install -y \
+# Install dependencies for Chromium and Puppeteer with retries for robustness
+RUN apt-get update || (sleep 5 && apt-get update) && apt-get install -y \
     chromium \
     fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
     libnss3 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 \
