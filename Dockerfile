@@ -1,5 +1,5 @@
 # Stage 1: Dependencies and System Libraries
-FROM oven/bun:1.1-slim AS base
+FROM oven/bun:1.3-slim AS base
 WORKDIR /app
 
 # Install dependencies for Chromium and Puppeteer
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 FROM base AS builder
 WORKDIR /app
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install
 
 COPY . .
 # Ensure we have the standalone output configuration
