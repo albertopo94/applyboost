@@ -63,3 +63,4 @@ ENV PORT=3000
 
 # Use bun to run the standalone server (compatible with Next.js 15 server.js)
 CMD ["bun", "server.js"]
+# Force rebuild cache bust: Wed Mar 25 14:02:10 CET 2026
