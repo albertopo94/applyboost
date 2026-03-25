@@ -5,12 +5,24 @@ WORKDIR /app
 # Force IPv4 for apt-get to avoid connection issues on some VPS
 RUN echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 
-# Install dependencies for Chromium and Puppeteer
-RUN apt-get update && apt-get install -y \
-    chromium \
-    fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
-    libnss3 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 \
-    --no-install-recommends \
+# Update package lists
+RUN apt-get update || (sleep 5 && apt-get update)
+
+# Install basic certificates and utilities
+RUN apt-get install -y --no-install-recommends ca-certificates curl
+
+# Install system libraries required by Puppeteer/Chromium
+RUN apt-get install -y --no-install-recommends \
+    libnss3 libatk-bridge2.0-0 libcups2 libdrm2 \
+    libxkbcommon0 libxcomposite1 libxdamage1 \
+    libxrandr2 libgbm1 libasound2 libxss1
+
+# Install fonts separately (often a source of errors)
+RUN apt-get install -y --no-install-recommends \
+    fonts-ipafont-gothic fonts-wqy-zenhei fonts-freefont-ttf
+
+# Install Chromium as the final step (main suspect)
+RUN apt-get install -y --no-install-recommends chromium \
     && rm -rf /var/lib/apt/lists/*
 
 # Stage 2: Build
