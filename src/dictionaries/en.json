@@ -43,6 +43,7 @@
     "editable": "Editable",
     "saving": "Saving...",
     "saved": "Saved",
+    "exporting": "Exporting...",
     "save_error": "Save error",
     "error": "Save error",
     "export_title": "Export CV",
