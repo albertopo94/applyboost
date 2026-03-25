@@ -2,8 +2,11 @@
 FROM oven/bun:latest AS base
 WORKDIR /app
 
-# Install dependencies for Chromium and Puppeteer with retries for robustness
-RUN apt-get update || (sleep 5 && apt-get update) && apt-get install -y \
+# Force IPv4 for apt-get to avoid connection issues on some VPS
+RUN echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
+
+# Install dependencies for Chromium and Puppeteer
+RUN apt-get update && apt-get install -y \
     chromium \
     fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
     libnss3 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 \
