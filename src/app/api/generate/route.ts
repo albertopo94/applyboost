@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { parseCV } from "@/lib/parsers/cvParser";
 import { scrapeJobUrl, normalizeJobDescription } from "@/lib/parsers/jobParser";
 import { buildMasterPrompt } from "@/lib/prompt/promptMaestro";
-import { callLLM } from "@/lib/llm";
-import { calculateATSScore } from "@/lib/ats/calculateATSScore";
-import { createClient, createAdminClient } from "@/lib/db/supabase-server";
 import { requireAuth } from "@/lib/auth/auth-utils";
+import { UsageService } from "@/lib/services/usageService";
+import { GenerationService } from "@/lib/services/generationService";
 
 export async function POST(req: Request) {
   try {
@@ -21,15 +20,9 @@ export async function POST(req: Request) {
     // Check for required environment variables
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey || serviceRoleKey === "your-service-role-key-here") {
-      console.error("[API_GENERATE] SUPABASE_SERVICE_ROLE_KEY is missing or using placeholder.");
+      console.error("[API_GENERATE] SUPABASE_SERVICE_ROLE_KEY is missing.");
       return NextResponse.json(
-        { 
-          error: { 
-            code: "ENV_ERROR", 
-            message: "Falta configurar SUPABASE_SERVICE_ROLE_KEY en el servidor", 
-            request_id: Date.now().toString() 
-          } 
-        },
+        { error: { code: "ENV_ERROR", message: "Falta configurar SUPABASE_SERVICE_ROLE_KEY", request_id: Date.now().toString() } },
         { status: 500 }
       );
     }
@@ -39,9 +32,7 @@ export async function POST(req: Request) {
     const jobUrl = formData.get("jobUrl") as string | null;
     const jobTextFromForm = formData.get("jobText") as string | null;
     let jobText = jobTextFromForm;
-    
-    // Determinar idioma de salida inteligente
-    const outputLanguage = (formData.get("outputLanguage") as string) || "auto";
+    const outputLanguageRaw = (formData.get("outputLanguage") as string) || "auto";
 
     // 2. Parsing del CV (soporta Drop file o texto pegado)
     if (cvFile && cvFile.size > 0 && !cvText) {
@@ -69,13 +60,7 @@ export async function POST(req: Request) {
       } catch (err: any) {
         if (err.message === "SCRAPER_BLOCKED") {
           return NextResponse.json(
-            { 
-              error: { 
-                code: "SCRAPER_BLOCKED", 
-                message: "No pudimos leer los detalles del empleo desde este enlace. Por favor, pega la descripción manualmente.", 
-                request_id: Date.now().toString() 
-              } 
-            },
+            { error: { code: "SCRAPER_BLOCKED", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: Date.now().toString() } },
             { status: 403 }
           );
         }
@@ -93,102 +78,36 @@ export async function POST(req: Request) {
       jobText = jobText.slice(0, 20000) + "... [Texto truncado]";
     }
 
-    // 4. Orquestación del LLM
+    // 4. Generation Orchestration
+    const outputLanguage = (outputLanguageRaw === "auto" ? "es" : outputLanguageRaw) as "es" | "en" | "it";
     const prompt = buildMasterPrompt({
       cvText: cvText,
       jobDescription: jobText,
-      outputLanguage: outputLanguage as "es" | "en" | "it" | "auto"
+      outputLanguage: outputLanguageRaw as "es" | "en" | "it" | "auto"
     });
 
     console.log(`[API_GENERATE] Generating for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}...`);
-    const llmResult = await callLLM(prompt);
-
-    // 5. Cálculos Deterministas
-    const scoreOriginal = calculateATSScore(cvText, llmResult.keywords);
-    const scoreOptimizado = calculateATSScore(llmResult.cv_optimizado, llmResult.keywords);
-    const hasMissingData = llmResult.cv_optimizado.includes("FALTA_DATO") || (llmResult.cover_letter?.includes("FALTA_DATO") ?? false);
-
-    // 6. DB Persistence (Supabase)
-    const supabase = await createClient();
     
-    const { data: genData, error: dbError } = await supabase
-      .from("generations")
-      .insert({
-        user_id: userId || null,
-        anonymous_id: user ? null : anonymousId,
-        cv_text: cvText,
-        job_description: jobText,
-        job_url: jobUrl,
-        output_language: (outputLanguage === "auto" ? "es" : outputLanguage) as "es" | "en" | "it",
-        generate_cv: true,
-        generate_cover: !!llmResult.cover_letter
-      })
-      .select('id')
-      .single();
-
-    if (dbError) throw dbError;
-    const genId = genData?.id;
-
-    const { error: cvError } = await supabase
-      .from("cv_versions")
-      .insert({
-        generation_id: genId,
-        cv_optimizado: llmResult.cv_optimizado,
-        cover_letter: llmResult.cover_letter,
-        cover_letter_explanation: Array.isArray(llmResult.cover_letter_explanation) 
-          ? llmResult.cover_letter_explanation.join("\n") 
-          : llmResult.cover_letter_explanation,
-        diff: llmResult.diff,
-        keywords: llmResult.keywords,
-        score_original: scoreOriginal,
-        score_optimizado: scoreOptimizado,
-        falta_dato_fields: hasMissingData ? ["Posible falta de información detectada"] : []
-      });
-
-    if (cvError) throw cvError;
-
-    await supabase.from("generation_logs").insert({
-      generation_id: genId,
-      regenerations: 0,
-      manual_edits: false,
-      falta_dato_fields: hasMissingData ? ["Posible falta de información detectada"] : []
+    const genResult = await GenerationService.generateAndStore({
+      userId,
+      anonymousId,
+      cvText,
+      jobText,
+      jobUrl,
+      outputLanguage,
+      prompt
     });
 
-    await supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' });
-
-    // 6.2 Increment anonymous usage if applicable (admin bypass)
-    let newCount = 0;
+    // 5. Usage Tracking (Anonymous only)
+    let usageCount = 0;
     if (!user && anonymousId) {
-      const adminClient = createAdminClient();
-      const { data: usage } = await adminClient
-        .from("anonymous_usage")
-        .select("count")
-        .eq("anonymous_id", anonymousId)
-        .single();
-      
-      newCount = (usage?.count || 0) + 1;
-      
-      await adminClient
-        .from("anonymous_usage")
-        .upsert({ 
-          anonymous_id: anonymousId, 
-          count: newCount, 
-          last_used_at: new Date().toISOString() 
-        }, { onConflict: 'anonymous_id' });
+      usageCount = await UsageService.trackAnonymousUsage(anonymousId);
     }
 
-    // 7. Respuesta Final
+    // 6. Respuesta Final
     return NextResponse.json({
-      generation_id: genId,
-      cv_optimizado: llmResult.cv_optimizado,
-      cover_letter: llmResult.cover_letter,
-      cover_letter_explanation: llmResult.cover_letter_explanation,
-      diff: llmResult.diff,
-      keywords: llmResult.keywords,
-      score_original: scoreOriginal,
-      score_optimizado: scoreOptimizado,
-      falta_dato_fields: hasMissingData ? ["Posible falta de información detectada"] : [],
-      usage_count: !user ? newCount : 0,
+      ...genResult,
+      usage_count: usageCount,
       is_anonymous: !user
     });
 
