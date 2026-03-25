@@ -4,15 +4,20 @@ import { scrapeJobUrl, normalizeJobDescription } from "@/lib/parsers/jobParser";
 import { buildMasterPrompt } from "@/lib/prompt/promptMaestro";
 import { callLLM } from "@/lib/llm";
 import { calculateATSScore } from "@/lib/ats/calculateATSScore";
-import { createClient } from "@/lib/db/supabase-server";
+import { createClient, createAdminClient } from "@/lib/db/supabase-server";
 import { requireAuth } from "@/lib/auth/auth-utils";
 
 export async function POST(req: Request) {
   try {
-    // 1. Verificar Autenticación (Estricta)
-    const user = await requireAuth();
-    const userId = user.id;
+    const formData = await req.formData();
+    const bodyAnonId = formData.get("anonymous_id") as string | null;
 
+    // 1. Resolve Identity (Allow Anonymous for MVP)
+    const { user, userId, anonymousId } = await requireAuth({ 
+      allowAnonymous: true, 
+      anonymousId: bodyAnonId || undefined 
+    });
+    
     // Check for required environment variables
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey || serviceRoleKey === "your-service-role-key-here") {
@@ -29,7 +34,6 @@ export async function POST(req: Request) {
       );
     }
 
-    const formData = await req.formData();
     const cvFile = formData.get("cvFile") as File | null;
     let cvText = formData.get("cvText") as string | null;
     const jobUrl = formData.get("jobUrl") as string | null;
@@ -96,7 +100,7 @@ export async function POST(req: Request) {
       outputLanguage: outputLanguage as "es" | "en" | "it" | "auto"
     });
 
-    console.log(`[API_GENERATE] Generating for user ${userId}...`);
+    console.log(`[API_GENERATE] Generating for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}...`);
     const llmResult = await callLLM(prompt);
 
     // 5. Cálculos Deterministas
@@ -110,7 +114,8 @@ export async function POST(req: Request) {
     const { data: genData, error: dbError } = await supabase
       .from("generations")
       .insert({
-        user_id: userId,
+        user_id: userId || null,
+        anonymous_id: user ? null : anonymousId,
         cv_text: cvText,
         job_description: jobText,
         job_url: jobUrl,
@@ -151,6 +156,27 @@ export async function POST(req: Request) {
 
     await supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' });
 
+    // 6.2 Increment anonymous usage if applicable (admin bypass)
+    let newCount = 0;
+    if (!user && anonymousId) {
+      const adminClient = createAdminClient();
+      const { data: usage } = await adminClient
+        .from("anonymous_usage")
+        .select("count")
+        .eq("anonymous_id", anonymousId)
+        .single();
+      
+      newCount = (usage?.count || 0) + 1;
+      
+      await adminClient
+        .from("anonymous_usage")
+        .upsert({ 
+          anonymous_id: anonymousId, 
+          count: newCount, 
+          last_used_at: new Date().toISOString() 
+        }, { onConflict: 'anonymous_id' });
+    }
+
     // 7. Respuesta Final
     return NextResponse.json({
       generation_id: genId,
@@ -161,7 +187,9 @@ export async function POST(req: Request) {
       keywords: llmResult.keywords,
       score_original: scoreOriginal,
       score_optimizado: scoreOptimizado,
-      falta_dato_fields: hasMissingData ? ["Posible falta de información detectada"] : []
+      falta_dato_fields: hasMissingData ? ["Posible falta de información detectada"] : [],
+      usage_count: !user ? newCount : 0,
+      is_anonymous: !user
     });
 
   } catch (error: any) {

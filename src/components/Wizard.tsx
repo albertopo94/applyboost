@@ -77,6 +77,13 @@ export default function Wizard({ onComplete }: WizardProps) {
       const data = await res.json();
 
       if (!res.ok) {
+        // Handle Limit Reached for Anonymous users
+        if (data?.error === "LIMIT_REACHED" || res.status === 401) {
+          setError("Has alcanzado el límite de 3 generaciones gratuitas. ¡Loguéate con Google para guardar tus documentos y seguir!");
+          setIsUploading(false);
+          return;
+        }
+
         if (data?.error?.code === "SCRAPER_BLOCKED") {
           setError(t("wizard.error_scraper_blocked") || data.error.message);
           setIsUploading(false);

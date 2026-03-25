@@ -1,30 +1,47 @@
 import { createClient } from "@/lib/db/supabase-server";
 import { type User } from "@supabase/supabase-js";
+import { cookies, headers } from "next/headers";
 
 /**
- * Ensures the user is authenticated.
- * Returns the User object or throws a 401 error.
- * 
- * Usage in API Routes:
- * try {
- *   const user = await requireAuth();
- *   // ...
- * } catch (error) {
- *   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
- * }
+ * Resolves the current identity from both user session and anonymous cookies.
  */
-export async function requireAuth(): Promise<User> {
+export async function getIdentity(anonymousIdOverride?: string): Promise<{ user: User | null; userId?: string; anonymousId: string }> {
   const supabase = await createClient();
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser();
 
-  if (error || !user) {
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const anonymousIdFromCookie = cookieStore.get("applyboost_anon_id")?.value || "";
+  const anonymousIdFromHeader = headerStore.get("x-applyboost-anon-id") || "";
+  
+  const anonymousId = anonymousIdOverride || anonymousIdFromHeader || anonymousIdFromCookie;
+
+  return {
+    user,
+    userId: user?.id,
+    anonymousId,
+  };
+}
+
+/**
+ * Ensures the user is authenticated.
+ * Returns the identity object if allowAnonymous is true, or the User object if false.
+ * Throws a 401 error if neither is true.
+ */
+export async function requireAuth(options?: { allowAnonymous?: false }): Promise<User>;
+export async function requireAuth(options: { allowAnonymous: true; anonymousId?: string }): Promise<{ user: User | null; userId?: string; anonymousId: string }>;
+export async function requireAuth(options: { allowAnonymous?: boolean; anonymousId?: string } = {}): Promise<any> {
+  const allowAnonymous = options.allowAnonymous ?? false;
+  const identity = await getIdentity(options.anonymousId);
+  const { user, anonymousId } = identity;
+
+  if (!user && (!allowAnonymous || !anonymousId)) {
     throw new Error("Unauthorized");
   }
 
-  return user;
+  return allowAnonymous ? identity : user;
 }
 
 /**
