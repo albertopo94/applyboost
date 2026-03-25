@@ -50,3 +50,7 @@ next.env.*
 !.env.example
 documentacion-negocio/
 .playwright-mcp/
+test-*.ts
+verify_ui.py
+verify-scraper-logic.ts
+_tmp_init/
