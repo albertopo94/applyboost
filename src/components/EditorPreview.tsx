@@ -1,12 +1,9 @@
 "use client";
 
 import { 
-  Download, 
   RefreshCw,
   LogIn,
-  Zap,
-  FileText,
-  Mail
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditor } from "@/hooks/useEditor";
@@ -15,6 +12,7 @@ import { PremiumScoreHeader } from "./editor/PremiumScoreHeader";
 import { TabSwitcher } from "./editor/TabSwitcher";
 import { AuditSidebar } from "./editor/AuditSidebar";
 import { HighlightedContent } from "./editor/HighlightedContent";
+import { ExportPanel } from "./editor/ExportPanel";
 
 interface DiffItem {
   cambio: string;
@@ -63,13 +61,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
       <div className="sticky top-0 z-30 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-slate-800 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <TabSwitcher 
-              activeTab={activeTab} 
-              onTabChange={setActiveTab} 
-              hasCL={hasCL} 
-            />
-            
-            <div className="hidden sm:flex items-center gap-2 h-6 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 h-7 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
               <div className={cn(
                 "w-2 h-2 rounded-full",
                 saveStatus === "saving" ? "bg-amber-400 animate-pulse" : 
@@ -83,7 +75,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
-            {isAnonymous ? (
+            {isAnonymous && (
               <button
                 onClick={handleLogin}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-blue-500/25"
@@ -92,47 +84,6 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 <span className="hidden md:inline">{t('editor.login_to_save')}</span>
                 <span className="md:hidden">Login</span>
               </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <select 
-                  value={templateMode}
-                  onChange={(e) => setTemplateMode(e.target.value as "simple" | "modern")}
-                  className="hidden md:block bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm font-medium rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20"
-                >
-                  <option value="modern">Template: Modern</option>
-                  <option value="simple">Template: Simple</option>
-                </select>
-
-                <button
-                  onClick={() => handleDownload('cv')}
-                  disabled={isDownloading}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all disabled:opacity-50"
-                >
-                  {isDownloading ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileText className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline">Descargar CV</span>
-                  <span className="sm:hidden">CV</span>
-                </button>
-
-                {hasCL && (
-                  <button
-                    onClick={() => handleDownload('cl')}
-                    disabled={isDownloading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50"
-                  >
-                    {isDownloading ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Mail className="h-4 w-4" />
-                    )}
-                    <span className="hidden sm:inline">Descargar Carta</span>
-                    <span className="sm:hidden">Carta</span>
-                  </button>
-                )}
-              </div>
             )}
           </div>
         </div>
@@ -147,6 +98,14 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               original={data.score_original} 
               optimized={data.score_optimizado} 
             />
+
+            <div className="flex items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-gray-100 dark:border-slate-800">
+              <TabSwitcher 
+                activeTab={activeTab} 
+                onTabChange={setActiveTab} 
+                hasCL={hasCL} 
+              />
+            </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative">
               <HighlightedContent 
@@ -190,6 +149,14 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
 
           {/* Sidebar Area */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+            <ExportPanel 
+              templateMode={templateMode}
+              setTemplateMode={setTemplateMode}
+              handleDownload={handleDownload}
+              isDownloading={isDownloading}
+              hasCL={hasCL}
+            />
+            
             <AuditSidebar 
               diff={data.diff} 
               explanation={data.cover_letter_explanation} 
