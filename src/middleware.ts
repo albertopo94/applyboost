@@ -98,37 +98,40 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith(route)
     );
 
-    // Special logic for /api/generate (allow anonymous within limits)
-    if (pathname === "/api/generate" && !user) {
-      // Handle missing service role key gracefully
-      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        return supabaseResponse;
-      }
-
-      const adminClient = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          cookies: {
-            getAll() { return []; },
-            setAll() {},
-          },
+    // Special logic for /api/generate and /api/export (allow anonymous)
+    if ((pathname === "/api/generate" || pathname.startsWith("/api/export")) && !user) {
+      // For generate, check limits. For export, we allow it (handled downstream)
+      if (pathname === "/api/generate") {
+        // Handle missing service role key gracefully
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          return supabaseResponse;
         }
-      );
 
-      const { data: usage, error: usageError } = await adminClient
-        .from("anonymous_usage")
-        .select("count")
-        .eq("anonymous_id", anonymousId)
-        .single();
-
-      if (!usageError && usage && usage.count >= 3) {
-        return withCookies(
-          NextResponse.json(
-            { error: "LIMIT_REACHED" },
-            { status: 401 }
-          )
+        const adminClient = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          {
+            cookies: {
+              getAll() { return []; },
+              setAll() {},
+            },
+          }
         );
+
+        const { data: usage, error: usageError } = await adminClient
+          .from("anonymous_usage")
+          .select("count")
+          .eq("anonymous_id", anonymousId)
+          .single();
+
+        if (!usageError && usage && usage.count >= 3) {
+          return withCookies(
+            NextResponse.json(
+              { error: "LIMIT_REACHED" },
+              { status: 401 }
+            )
+          );
+        }
       }
 
       return supabaseResponse;
