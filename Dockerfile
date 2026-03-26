@@ -30,14 +30,19 @@ RUN apt-get install -y --no-install-recommends chromium \
 # Stage 2: Build
 FROM base AS builder
 WORKDIR /app
+
+# Declare ARGs for build-time injection (Next.js requires these for client bundle)
+ARG NEXT_PUBLIC_SUPABASE_URL=\"https://otpyrwkjpareekcftbhj.supabase.co\"
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk\"
+
+# Set them as ENVs so the 'next build' process sees them
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 COPY package.json bun.lock ./
 RUN bun install
 
 COPY . .
-
-# Create a temporary .env.production to ensure Next.js finds the NEXT_PUBLIC variables during build
-# Next.js 15 requires these to be present during 'next build' to inject them into the client bundle.
-RUN echo \"NEXT_PUBLIC_SUPABASE_URL=https://otpyrwkjpareekcftbhj.supabase.co\\nNEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk\" > .env.production
 
 # Environment variables to skip TS and Lint checks during build (Saves massive RAM)
 ENV NEXT_TELEMETRY_DISABLED=1
