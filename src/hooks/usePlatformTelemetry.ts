@@ -14,8 +14,9 @@ export function usePlatformTelemetry() {
     const trackView = async () => {
       console.log('[Telemetry] Initializing trackView...');
       const hasTracked = sessionStorage.getItem('has_tracked_page_view');
-      if (!hasTracked) {
-        console.log('[Telemetry] Calling RPC increment_platform_stat...');
+      console.log('[Telemetry] hasTracked value:', hasTracked); 
+      if (!hasTracked || hasTracked === 'false') {
+        console.log('[Telemetry] Calling RPC...');
         const { data, error } = await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
         console.log('[Telemetry] RPC Finished. Error:', error, 'Data:', data);
         if (error) {
