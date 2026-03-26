@@ -39,9 +39,13 @@ COPY . .
 # Next.js 15 requires these to be present during 'next build' to inject them into the client bundle.
 RUN echo \"NEXT_PUBLIC_SUPABASE_URL=https://otpyrwkjpareekcftbhj.supabase.co\\nNEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk\" > .env.production
 
-# Limit Node memory to prevent OOM freezes during build on VPS
-# Set to 1536MB (Safer for 2GB RAM machines)
-ENV NODE_OPTIONS=\"--max-old-space-size=1536\"
+# Environment variables to skip TS and Lint checks during build (Saves massive RAM)
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_IGNORE_TYPE_CHECKING=1
+ENV NEXT_IGNORE_ESLINT=1
+
+# Limit Node memory to 768MB (Good middle ground for 1GB/2GB VPS)
+ENV NODE_OPTIONS=\"--max-old-space-size=768\"
 
 RUN bun run build
 
