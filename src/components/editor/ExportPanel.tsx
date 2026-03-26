@@ -2,6 +2,7 @@
 
 import { Download, MessageSquare, ChevronRight, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ExportPanelProps {
   templateMode: "simple" | "modern";
@@ -18,19 +19,20 @@ export function ExportPanel({
   downloadingType,
   hasCL
 }: ExportPanelProps) {
+  const { t } = useLanguage();
   const isDownloading = downloadingType !== null;
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden p-6 space-y-6">
       <div>
-        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">Panel de Exportación</h3>
-        <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">Configura y descarga tu contenido optimizado.</p>
+        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{t('editor.export.title')}</h3>
+        <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">{t('editor.export.subtitle')}</p>
       </div>
 
       {/* Template Selection */}
       <div className="space-y-3">
         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
-          Estilo del Template
+          {t('editor.export.template_style')}
         </label>
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -42,7 +44,7 @@ export function ExportPanel({
                 : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 text-gray-500 hover:border-gray-200 dark:hover:border-slate-600"
             )}
           >
-            Ejecutivo
+            {t('editor.export.template_simple')}
           </button>
           <button
             onClick={() => setTemplateMode("modern")}
@@ -53,7 +55,7 @@ export function ExportPanel({
                 : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 text-gray-500 hover:border-gray-200 dark:hover:border-slate-600"
             )}
           >
-            Moderno
+            {t('editor.export.template_modern')}
           </button>
         </div>
       </div>
@@ -70,8 +72,8 @@ export function ExportPanel({
               {downloadingType === "cv" ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             </div>
             <div className="text-left">
-              <div className="text-sm font-black">Descargar CV</div>
-              <div className="text-[10px] opacity-60 font-bold uppercase tracking-tight">PDF Optimizado</div>
+              <div className="text-sm font-black">{t('editor.export.cv_title')}</div>
+              <div className="text-[10px] opacity-60 font-bold uppercase tracking-tight">{t('editor.export.cv_subtitle')}</div>
             </div>
           </div>
           <ChevronRight className="h-5 w-5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
@@ -88,8 +90,8 @@ export function ExportPanel({
                 {downloadingType === "cl" ? <RefreshCw className="h-5 w-5 animate-spin" /> : <MessageSquare className="h-5 w-5" />}
               </div>
               <div className="text-left">
-                <div className="text-sm font-black">Descargar Carta</div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">PDF de Presentación</div>
+                <div className="text-sm font-black">{t('editor.export.cl_title')}</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">{t('editor.export.cl_subtitle')}</div>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />

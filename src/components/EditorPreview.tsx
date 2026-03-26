@@ -79,11 +79,10 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 </div>
                 <div>
                   <h4 className="text-sm font-black text-amber-900 dark:text-amber-100 leading-none mb-1">
-                    Datos faltantes detectados
+                    {t('editor.missing_fields_title')}
                   </h4>
                   <p className="text-xs text-amber-800/70 dark:text-amber-400/70 font-medium leading-relaxed">
-                    Hemos detectado campos que requieren tu atención: <span className="font-bold">{data.falta_dato_fields.join(", ")}</span>. 
-                    Puedes completarlos directamente en el texto resaltado.
+                    {t('editor.missing_fields_desc', { fields: data.falta_dato_fields.join(", ") })}
                   </p>
                 </div>
               </motion.div>
@@ -99,7 +98,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 
                 <div className="flex items-center gap-2 px-2 py-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                  <span className="text-[10px] font-black text-blue-700/60 dark:text-blue-400/60 uppercase tracking-wider">Editable</span>
+                  <span className="text-[10px] font-black text-blue-700/60 dark:text-blue-400/60 uppercase tracking-wider">{t('editor.editable')}</span>
                 </div>
               </div>
               
@@ -122,7 +121,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                     className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-500/25"
                   >
                     <LogIn className="h-3.5 w-3.5" />
-                    <span>Login</span>
+                    <span>{t('editor.login_with_google')}</span>
                   </button>
                 )}
               </div>

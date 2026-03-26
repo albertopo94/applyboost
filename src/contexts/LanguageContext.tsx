@@ -11,7 +11,7 @@ export type Language = keyof typeof dictionaries;
 type LanguageContextType = {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (path: string, defaultValue?: string) => any;
+  t: (path: string, options?: any) => any;
   dict: typeof es;
 };
 
@@ -39,15 +39,29 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const dict = dictionaries[language];
 
-  const t = (path: string, defaultValue?: string): any => {
-    const val = path.split(".").reduce((obj: any, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), dict);
-    return val !== undefined ? val : (defaultValue !== undefined ? defaultValue : path);
+  const t = (path: string, options?: any): any => {
+    let val = path.split(".").reduce((obj: any, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), dict);
+    if (val === undefined) return path;
+
+    if (typeof val === 'string' && options) {
+      Object.keys(options).forEach(key => {
+        val = val.replace(`{${key}}`, options[key]);
+      });
+    }
+    return val;
   };
 
   if (!mounted) {
     // Para evitar hydration mismatches en el Server Render, usamos el fallback
     return (
-      <LanguageContext.Provider value={{ language: "en", setLanguage, t: (p, def) => { const val = p.split(".").reduce((obj: any, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), en); return val !== undefined ? val : (def !== undefined ? def : p); }, dict: en }}>
+      <LanguageContext.Provider value={{ language: "en", setLanguage, t: (p, opt) => { 
+        let val = p.split(".").reduce((obj: any, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), en); 
+        if (val === undefined) return p;
+        if (typeof val === 'string' && opt) {
+          Object.keys(opt).forEach(key => { val = val.replace(`{${key}}`, opt[key]); });
+        }
+        return val;
+      }, dict: en }}>
         {children}
       </LanguageContext.Provider>
     );
