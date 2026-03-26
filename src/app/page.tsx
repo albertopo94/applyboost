@@ -6,6 +6,11 @@ export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
+  // Blindaje total para el build de Dokploy
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return <HomeClient initialStats={{ cvs_generated: 0, page_views: 0 }} />;
+  }
+
   // Usamos el cliente admin para asegurar que la lectura siempre funcione
   const adminClient = createAdminClient();
   
