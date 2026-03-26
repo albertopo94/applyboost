@@ -11,3 +11,7 @@ BEGIN;
   -- Add explicitly
   ALTER PUBLICATION supabase_realtime ADD TABLE platform_stats;
 COMMIT;
+
+-- 3. Final permissions and security
+GRANT ALL ON TABLE platform_stats TO postgres, service_role;
+ALTER FUNCTION increment_platform_stat(TEXT) SECURITY DEFINER;
