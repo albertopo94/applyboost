@@ -16,11 +16,13 @@ export function usePlatformTelemetry() {
       const hasTracked = sessionStorage.getItem('has_tracked_page_view');
       console.log('[Telemetry] hasTracked value:', hasTracked); 
       if (!hasTracked || hasTracked === 'false') {
-        console.log('[Telemetry] Calling RPC...');
-        const { data, error } = await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
-        console.log('[Telemetry] RPC Finished. Error:', error, 'Data:', data);
+        console.log('[Telemetry] Manual increment...');
+        const { data: stats } = await supabase.from('platform_stats').select('page_views').eq('id', 1).single();
+        const currentViews = stats?.page_views || 0;
+        const { error } = await supabase.from('platform_stats').update({ page_views: currentViews + 1 }).eq('id', 1);
+        
         if (error) {
-          console.error('[Telemetry] RPC Error tracking page view:', error);
+          console.error('[Telemetry] Error updating page view:', error);
         } else {
           sessionStorage.setItem('has_tracked_page_view', 'true');
         }

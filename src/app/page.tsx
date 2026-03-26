@@ -14,11 +14,9 @@ export default async function Home() {
   console.log('[Server] Stats from DB:', stats);
   if (error) console.error('[Server] DB Error:', error);
 
-  // Intento de incremento desde el servidor para validar permisos de service_role
-  if (stats && stats.page_views === 0) {
-    console.log('[Server] page_views is 0, forcing increment from server...');
-    await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
-  }
+  // Aseguramos que la fila de stats existe y tiene al menos 1 view
+  // Esto salta el error de RPC missing si no se corrieron migraciones
+  await supabase.from('platform_stats').upsert({ id: 1, page_views: 1 }, { onConflict: 'id' });
 
   return <HomeClient initialStats={stats} />;
 }
