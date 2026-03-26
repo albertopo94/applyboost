@@ -22,7 +22,61 @@ export function usePlatformTelemetry() {
     trackView();
 
     // 2. Auth state change listener for anonymous data merge
-    const syncAnonymousData = async (user: any) => {\n      if (!user || isSyncing.current) return;\n\n      // Read cookie manually from document.cookie\n      const getCookie = (name: string) => {\n        const value = `; ${document.cookie}`;\n        const parts = value.split(`; ${name}=`);\n        if (parts.length === 2) return parts.pop()?.split(';').shift();\n      };\n\n      const anonId = getCookie('applyboost_anon_id');\n      \n      if (anonId) {\n        console.log('[Sync] Detecting login with anonymous data. Merging...', { \n          anon_id: anonId, \n          user_id: user.id \n        });\n        \n        isSyncing.current = true;\n        \n        try {\n          const { error } = await supabase.rpc('merge_anonymous_data', { \n            anon_id: anonId, \n            target_user_id: user.id \n          });\n          \n          if (error) {\n            console.error('[Sync] Error merging anonymous data:', error);\n          } else {\n            console.log('[Sync] Successfully merged anonymous data.');\n            \n            // Clear cookie\n            document.cookie = 'applyboost_anon_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';\n            \n            // Standard alert to inform user about data sync\n            alert(\"¡Tus documentos anónimos han sido vinculados a tu cuenta!\");\n            console.log('[Sync] Anonymous cookie cleared.');\n          }\n        } catch (err) {\n          console.error('[Sync] Unexpected error during merge:', err);\n        } finally {\n          isSyncing.current = false;\n        }\n      }\n    };\n\n    // Check immediately on mount if user is already logged in\n    supabase.auth.getUser().then(({ data: { user } }) => {\n       if (user) syncAnonymousData(user);\n    });\n\n    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {\n      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {\n        syncAnonymousData(session.user);\n      }\n    });
+    const syncAnonymousData = async (user: any) => {
+      if (!user || isSyncing.current) return;
+
+      // Read cookie manually from document.cookie
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+        return undefined;
+      };
+
+      const anonId = getCookie('applyboost_anon_id');
+      
+      if (anonId) {
+        console.log('[Sync] Detecting login with anonymous data. Merging...', { 
+          anon_id: anonId, 
+          user_id: user.id 
+        });
+        
+        isSyncing.current = true;
+        
+        try {
+          const { error } = await supabase.rpc('merge_anonymous_data', { 
+            anon_id: anonId, 
+            target_user_id: user.id 
+          });
+          
+          if (error) {
+            console.error('[Sync] Error merging anonymous data:', error);
+          } else {
+            console.log('[Sync] Successfully merged anonymous data.');
+            
+            // Clear cookie
+            document.cookie = 'applyboost_anon_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+            
+            // Standard alert to inform user about data sync
+            // In a real app we might use a toast, but this is a solid fallback
+            console.log('[Sync] Anonymous cookie cleared.');
+          }
+        } catch (err) {
+          console.error('[Sync] Unexpected error during merge:', err);
+        } finally {
+          isSyncing.current = false;
+        }
+      }
+    };
+
+    // Check immediately on mount if user is already logged in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+       if (user) syncAnonymousData(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        syncAnonymousData(session.user);
       }
     });
 
