@@ -14,11 +14,11 @@ export function usePlatformTelemetry() {
     const trackView = async () => {
       const hasTracked = sessionStorage.getItem('has_tracked_page_view');
       if (!hasTracked) {
-        try {
-          await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
+        const { error } = await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
+        if (error) {
+          console.error('[Telemetry] RPC Error tracking page view:', error);
+        } else {
           sessionStorage.setItem('has_tracked_page_view', 'true');
-        } catch (error) {
-          console.error('Error tracking page view:', error);
         }
       }
     };
