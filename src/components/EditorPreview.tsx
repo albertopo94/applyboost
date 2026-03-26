@@ -89,7 +89,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               </motion.div>
             )}
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-gray-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-4 p-2">
               <div className="flex items-center gap-4">
                 <TabSwitcher 
                   activeTab={activeTab} 
@@ -97,14 +97,14 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                   hasCL={hasCL} 
                 />
                 
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm">
+                <div className="flex items-center gap-2 px-2 py-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                  <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wider">Editable</span>
+                  <span className="text-[10px] font-black text-blue-700/60 dark:text-blue-400/60 uppercase tracking-wider">Editable</span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 px-2">
-                <div className="flex items-center gap-2 h-7 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 h-7 px-3 rounded-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
                   <div className={cn(
                     "w-2 h-2 rounded-full",
                     saveStatus === "saving" ? "bg-amber-400 animate-pulse" : 
