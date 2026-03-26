@@ -61,10 +61,10 @@ export function ExportPanel({
         <button
           onClick={() => handleDownload("cv")}
           disabled={isDownloading}
-          className="w-full flex items-center justify-between p-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 group"
+          className="w-full flex items-center justify-between p-4 bg-blue-600 text-white rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 group shadow-lg shadow-blue-600/20"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
               {isDownloading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             </div>
             <div className="text-left">
@@ -79,15 +79,15 @@ export function ExportPanel({
           <button
             onClick={() => handleDownload("cl")}
             disabled={isDownloading}
-            className="w-full flex items-center justify-between p-4 bg-blue-600 text-white rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 group shadow-lg shadow-blue-600/20"
+            className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-900 dark:text-white rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
                 {isDownloading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <MessageSquare className="h-5 w-5" />}
               </div>
               <div className="text-left">
                 <div className="text-sm font-black">Descargar Carta</div>
-                <div className="text-[10px] opacity-60 font-bold uppercase tracking-tight">PDF de Presentación</div>
+                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">PDF de Presentación</div>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />

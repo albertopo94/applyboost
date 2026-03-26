@@ -3,7 +3,8 @@
 import { 
   RefreshCw,
   LogIn,
-  Zap
+  Zap,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditor } from "@/hooks/useEditor";
@@ -57,22 +58,50 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/20">
-      <main className="max-w-[1600px] mx-auto p-4 sm:p-6 md:p-8">
-        <PremiumScoreHeader 
-          original={data.score_original} 
-          optimized={data.score_optimizado} 
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8">
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Editor Area */}
           <div className="lg:col-span-8 space-y-6">
+            <PremiumScoreHeader 
+              original={data.score_original} 
+              optimized={data.score_optimizado} 
+            />
+
+            {data.falta_dato_fields && data.falta_dato_fields.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 flex gap-4 items-start shadow-sm"
+              >
+                <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-amber-900 dark:text-amber-100 leading-none mb-1">
+                    Datos faltantes detectados
+                  </h4>
+                  <p className="text-xs text-amber-800/70 dark:text-amber-400/70 font-medium leading-relaxed">
+                    Hemos detectado campos que requieren tu atención: <span className="font-bold">{data.falta_dato_fields.join(", ")}</span>. 
+                    Puedes completarlos directamente en el texto resaltado.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-gray-100 dark:border-slate-800">
-              <TabSwitcher 
-                activeTab={activeTab} 
-                onTabChange={setActiveTab} 
-                hasCL={hasCL} 
-              />
+              <div className="flex items-center gap-4">
+                <TabSwitcher 
+                  activeTab={activeTab} 
+                  onTabChange={setActiveTab} 
+                  hasCL={hasCL} 
+                />
+                
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                  <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-wider">Editable</span>
+                </div>
+              </div>
               
               <div className="flex items-center gap-3 px-2">
                 <div className="flex items-center gap-2 h-7 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -100,12 +129,14 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative">
-              <HighlightedContent 
-                content={activeTab === "cv" ? cvText : clText}
-                onUpdate={activeTab === "cv" ? setCvText : setClText}
-                keywords={data.keywords}
-                activeTab={activeTab}
-              />
+              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar">
+                <HighlightedContent 
+                  content={activeTab === "cv" ? cvText : clText}
+                  onUpdate={activeTab === "cv" ? setCvText : setClText}
+                  keywords={data.keywords}
+                  activeTab={activeTab}
+                />
+              </div>
 
               {/* Limit Overlay */}
               <AnimatePresence>
