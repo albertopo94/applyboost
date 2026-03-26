@@ -93,10 +93,31 @@ export class GenerationService {
       falta_dato_fields: faltaDatoMsg
     });
 
-    const adminClient = createAdminClient();
-    const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_generated').eq('id', 1).single();
-    const nextValue = (currentStats?.cvs_generated || 0) + 1;
-    await adminClient.from('platform_stats').update({ cvs_generated: nextValue }).eq('id', 1);
+    // Increment stats in background-like manner (non-blocking)
+    try {
+      const statsPromise = (async () => {
+        const adminClient = createAdminClient();
+        const { data: currentStats } = await adminClient
+          .from('platform_stats')
+          .select('cvs_generated')
+          .eq('id', 1)
+          .single();
+        
+        const nextValue = (currentStats?.cvs_generated || 0) + 1;
+        await adminClient
+          .from('platform_stats')
+          .update({ cvs_generated: nextValue })
+          .eq('id', 1);
+      })();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Stats increment timeout")), 2000)
+      );
+
+      await Promise.race([statsPromise, timeoutPromise]);
+    } catch (err) {
+      console.warn("Platform stats increment failed or timed out (safe to ignore):", err);
+    }
 
     return {
       generation_id: genId,
