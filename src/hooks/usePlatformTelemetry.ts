@@ -12,6 +12,7 @@ export function usePlatformTelemetry() {
 
     // 1. Existing page view tracking logic
     const trackView = async () => {
+      console.log('[Telemetry] Initializing trackView...');
       const hasTracked = sessionStorage.getItem('has_tracked_page_view');
       if (!hasTracked) {
         const { error } = await supabase.rpc('increment_platform_stat', { stat_name: 'page_views' });
