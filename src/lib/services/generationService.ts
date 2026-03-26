@@ -1,6 +1,6 @@
 import { callLLM } from "@/lib/llm";
 import { calculateATSScore } from "@/lib/ats/calculateATSScore";
-import { createClient } from "@/lib/db/supabase-server";
+import { createClient, createAdminClient } from "@/lib/db/supabase-server";
 
 export interface GenerationRequest {
   userId?: string | null;
@@ -93,7 +93,10 @@ export class GenerationService {
       falta_dato_fields: faltaDatoMsg
     });
 
-    await supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' });
+    const adminClient = createAdminClient();
+    const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_generated').eq('id', 1).single();
+    const nextValue = (currentStats?.cvs_generated || 0) + 1;
+    await adminClient.from('platform_stats').update({ cvs_generated: nextValue }).eq('id', 1);
 
     return {
       generation_id: genId,

@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/db/supabase-server";
+import { createClient, createAdminClient } from "@/lib/db/supabase-server";
 import { generateDOCX } from "@/lib/render/docGenerator";
 import type { CVDataObject } from "@/lib/llm/types";
 
@@ -52,6 +52,11 @@ export async function POST(req: NextRequest) {
         .update({ exports_available: newBalance })
         .eq("user_id", user.id);
     }
+
+    const adminClient = createAdminClient();
+    const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
+    const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
+    await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
 
     // 6. Return raw binary buffer with correct Content-Type (docx)
     return new NextResponse(docBuffer as unknown as BodyInit, {
