@@ -91,7 +91,8 @@ export function useEditor(data: GenerateResponse) {
     });
   };
 
-  const handleDownload = async (type: Tab) => {
+  const handleDownload = async (typeParam?: Tab) => {
+    const type = typeParam || activeTab;
     setIsDownloading(true);
     
     try {

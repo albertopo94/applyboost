@@ -4,7 +4,9 @@ import {
   Download, 
   RefreshCw,
   LogIn,
-  Zap
+  Zap,
+  FileText,
+  Mail
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditor } from "@/hooks/useEditor";
@@ -102,17 +104,34 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 </select>
 
                 <button
-                  onClick={() => handleDownload(activeTab)}
+                  onClick={() => handleDownload('cv')}
                   disabled={isDownloading}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all disabled:opacity-50"
                 >
                   {isDownloading ? (
                     <RefreshCw className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Download className="h-4 w-4" />
+                    <FileText className="h-4 w-4" />
                   )}
-                  {t('editor.download')}
+                  <span className="hidden sm:inline">Descargar CV</span>
+                  <span className="sm:hidden">CV</span>
                 </button>
+
+                {hasCL && (
+                  <button
+                    onClick={() => handleDownload('cl')}
+                    disabled={isDownloading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50"
+                  >
+                    {isDownloading ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">Descargar Carta</span>
+                    <span className="sm:hidden">Carta</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -129,7 +148,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               optimized={data.score_optimizado} 
             />
 
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden min-h-[800px] relative">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative">
               <HighlightedContent 
                 content={activeTab === "cv" ? cvText : clText}
                 onUpdate={activeTab === "cv" ? setCvText : setClText}
