@@ -10,27 +10,7 @@ export function usePlatformTelemetry() {
     const supabase = createClient();
     if (!supabase) return;
 
-    // 1. Existing page view tracking logic
-    const trackView = async () => {
-      console.log('[Telemetry] Initializing trackView...');
-      const hasTracked = sessionStorage.getItem('has_tracked_page_view');
-      console.log('[Telemetry] hasTracked value:', hasTracked); 
-      if (!hasTracked || hasTracked === 'false') {
-        console.log('[Telemetry] Manual increment...');
-        const { data: stats } = await supabase.from('platform_stats').select('page_views').eq('id', 1).single();
-        const currentViews = stats?.page_views || 0;
-        const { error } = await supabase.from('platform_stats').update({ page_views: currentViews + 1 }).eq('id', 1);
-        
-        if (error) {
-          console.error('[Telemetry] Error updating page view:', error);
-        } else {
-          sessionStorage.setItem('has_tracked_page_view', 'true');
-        }
-      }
-    };
-    trackView();
-
-    // 2. Auth state change listener for anonymous data merge
+    // Auth state change listener for anonymous data merge
     const syncAnonymousData = async (user: User | null) => {
       if (!user || isSyncing.current) return;
 
@@ -54,7 +34,6 @@ export function usePlatformTelemetry() {
           });
           
           if (error) {
-            console.error('[Sync] Error merging anonymous data:', error);
             toast.error("Error al sincronizar tus datos");
           } else {
             // Clear cookie
@@ -62,7 +41,6 @@ export function usePlatformTelemetry() {
             toast.success("Tus borradores previos se han sincronizado correctamente");
           }
         } catch (err) {
-          console.error('[Sync] Unexpected error during merge:', err);
           toast.error("Error inesperado en la sincronización");
         } finally {
           isSyncing.current = false;
