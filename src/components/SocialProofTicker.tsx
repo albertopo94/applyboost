@@ -18,6 +18,7 @@ export default function SocialProofTicker() {
     async function fetchStats() {
       try {
         const supabase = createClient();
+        if (!supabase) return;
         const { data, error } = await supabase
           .from("platform_stats")
           .select("page_views, cvs_generated, cvs_downloaded")

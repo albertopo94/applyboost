@@ -20,12 +20,13 @@ export function useEditor(data: GenerateResponse) {
   const hasCL = !!data.cover_letter;
 
   useEffect(() => {
+    if (!supabase) return;
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setIsAnonymous(!user);
     };
     checkUser();
-  }, [supabase.auth]);
+  }, [supabase?.auth]);
 
   useEffect(() => {
     if (!hasCL && activeTab === "cl") {
@@ -81,6 +82,7 @@ export function useEditor(data: GenerateResponse) {
   }, []);
 
   const handleLogin = async () => {
+    if (!supabase) return;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

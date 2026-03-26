@@ -6,6 +6,7 @@ export function usePlatformTelemetry() {
 
   useEffect(() => {
     const supabase = createClient();
+    if (!supabase) return;
 
     // 1. Existing page view tracking logic
     const trackView = async () => {
