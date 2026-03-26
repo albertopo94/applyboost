@@ -47,7 +47,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
     saveStatus,
     templateMode,
     setTemplateMode,
-    isDownloading,
+    downloadingType,
     isAnonymous,
     hasLimitReached,
     hasCL,
@@ -176,7 +176,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               templateMode={templateMode}
               setTemplateMode={setTemplateMode}
               handleDownload={handleDownload}
-              isDownloading={isDownloading}
+              downloadingType={downloadingType}
               hasCL={hasCL}
             />
             

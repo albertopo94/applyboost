@@ -12,7 +12,7 @@ export function useEditor(data: GenerateResponse) {
   const [clText, setClText] = useState(data.cover_letter || "");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [templateMode, setTemplateMode] = useState<"simple" | "modern">("modern");
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingType, setDownloadingType] = useState<"cv" | "cl" | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [hasLimitReached, setHasLimitReached] = useState(false);
   const { t } = useLanguage();
@@ -94,7 +94,7 @@ export function useEditor(data: GenerateResponse) {
 
   const handleDownload = async (typeParam?: Tab) => {
     const type = typeParam || activeTab;
-    setIsDownloading(true);
+    setDownloadingType(type);
     
     try {
       const text = type === "cv" ? cvText : clText;
@@ -142,7 +142,7 @@ export function useEditor(data: GenerateResponse) {
       console.error("Download error:", err);
       toast.error(t("editor.export_error") || "Error al exportar el documento.");
     } finally {
-      setIsDownloading(false);
+      setDownloadingType(null);
     }
   };
 
@@ -156,7 +156,7 @@ export function useEditor(data: GenerateResponse) {
     saveStatus,
     templateMode,
     setTemplateMode,
-    isDownloading,
+    downloadingType,
     isAnonymous,
     hasLimitReached,
     hasCL,

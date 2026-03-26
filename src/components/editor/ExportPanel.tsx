@@ -7,7 +7,7 @@ interface ExportPanelProps {
   templateMode: "simple" | "modern";
   setTemplateMode: (mode: "simple" | "modern") => void;
   handleDownload: (type?: "cv" | "cl") => Promise<void>;
-  isDownloading: boolean;
+  downloadingType: "cv" | "cl" | null;
   hasCL: boolean;
 }
 
@@ -15,9 +15,11 @@ export function ExportPanel({
   templateMode,
   setTemplateMode,
   handleDownload,
-  isDownloading,
+  downloadingType,
   hasCL
 }: ExportPanelProps) {
+  const isDownloading = downloadingType !== null;
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden p-6 space-y-6">
       <div>
@@ -65,7 +67,7 @@ export function ExportPanel({
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
-              {isDownloading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+              {downloadingType === "cv" ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
             </div>
             <div className="text-left">
               <div className="text-sm font-black">Descargar CV</div>
@@ -83,7 +85,7 @@ export function ExportPanel({
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
-                {isDownloading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <MessageSquare className="h-5 w-5" />}
+                {downloadingType === "cl" ? <RefreshCw className="h-5 w-5 animate-spin" /> : <MessageSquare className="h-5 w-5" />}
               </div>
               <div className="text-left">
                 <div className="text-sm font-black">Descargar Carta</div>
