@@ -11,8 +11,8 @@ export const AuditSidebar = ({ diff, explanation }: { diff: DiffItem[]; explanat
   const { t } = useLanguage();
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50 border-l border-gray-200 dark:border-slate-800">
-      <div className="p-6 border-b border-gray-200 dark:border-slate-800">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden">
+      <div className="p-6 border-b border-gray-100 dark:border-slate-800">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-blue-600" />
           {t('editor.audit_title')}

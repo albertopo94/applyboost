@@ -7,7 +7,7 @@ export const PremiumScoreHeader = ({ original, optimized }: { original: number; 
   const improvement = optimized - original;
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 md:p-6 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 md:p-6 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl">
       <div className="flex items-center gap-4">
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
