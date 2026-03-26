@@ -1,11 +1,11 @@
 "use client";
 
-import { 
-  RefreshCw,
-  LogIn,
-  Zap,
-  AlertTriangle
-} from "lucide-react";
+import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
+import LogIn from "lucide-react/dist/esm/icons/log-in";
+import User from "lucide-react/dist/esm/icons/user";
+import Zap from "lucide-react/dist/esm/icons/zap";
+import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditor } from "@/hooks/useEditor";
 import { cn } from "@/lib/utils";
@@ -78,8 +78,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 className="mb-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                    <Zap className="h-4 w-4 fill-current" />
+                  <div className="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-800/60 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                    <User className="h-4 w-4" />
                   </div>
                   <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                     {t('editor.quota_banner', { count: remainingUses })}
