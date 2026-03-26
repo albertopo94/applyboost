@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (stored && dictionaries[stored]) {
       setLanguageState(stored);
     } else {
-      const userLang = navigator.language.split("-")[0] as Language;
+      const userLang = typeof navigator !== 'undefined' ? (navigator.language.split("-")[0] as Language) : 'en';
       setLanguageState(userLang in dictionaries ? userLang : "en");
     }
   }, []);

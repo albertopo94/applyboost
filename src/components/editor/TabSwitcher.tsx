@@ -1,10 +1,12 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { FileText, MessageSquare } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-function cn(...inputs: (string | undefined | null | false)[]) {
+function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
