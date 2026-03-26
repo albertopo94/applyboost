@@ -5,6 +5,11 @@ const PROTECTED_ROUTES = ["/dashboard", "/editor", "/settings", "/account"];
 const PROTECTED_API_ROUTES = ["/api/generate", "/api/cv", "/api/export"];
 
 export async function middleware(request: NextRequest) {
+  // Skip heavy logic during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next();
 
   try {
@@ -53,11 +58,6 @@ export async function middleware(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 365, // 1 year
       sameSite: "lax",
     });
-
-    // 3. Initialize Supabase client
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return supabaseResponse;
-    }
 
     // 3. Initialize Supabase client
     if (
@@ -118,11 +118,19 @@ export async function middleware(request: NextRequest) {
           }
         );
 
-        const { data: usage, error: usageError } = await adminClient
-          .from("anonymous_usage")
-          .select("count")
-          .eq("anonymous_id", anonymousId)
-          .single();
+        // Use a 2-second timeout for the database query
+        const timeoutPromise = new Promise<{ data: any, error: any }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: { message: "TIMEOUT" } }), 2000)
+        );
+
+        const { data: usage, error: usageError } = await Promise.race([
+          adminClient
+            .from("anonymous_usage")
+            .select("count")
+            .eq("anonymous_id", anonymousId)
+            .single(),
+          timeoutPromise
+        ]);
 
         if (!usageError && usage && usage.count >= 3) {
           return withCookies(
