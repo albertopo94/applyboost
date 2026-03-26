@@ -6,6 +6,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { Toaster } from "sonner";
+import AuthSync from "@/components/AuthSync";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,6 +32,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
             {children}
+            <Toaster richColors position="top-right" />
+            <AuthSync />
           </LanguageProvider>
         </ThemeProvider>
       </body>

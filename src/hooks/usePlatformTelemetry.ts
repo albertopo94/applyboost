@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/db/supabase-browser';
+import { toast } from 'sonner';
+import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 
 export function usePlatformTelemetry() {
   const isSyncing = useRef(false);
@@ -23,7 +25,7 @@ export function usePlatformTelemetry() {
     trackView();
 
     // 2. Auth state change listener for anonymous data merge
-    const syncAnonymousData = async (user: any) => {
+    const syncAnonymousData = async (user: User | null) => {
       if (!user || isSyncing.current) return;
 
       // Read cookie manually from document.cookie
@@ -37,11 +39,6 @@ export function usePlatformTelemetry() {
       const anonId = getCookie('applyboost_anon_id');
       
       if (anonId) {
-        console.log('[Sync] Detecting login with anonymous data. Merging...', { 
-          anon_id: anonId, 
-          user_id: user.id 
-        });
-        
         isSyncing.current = true;
         
         try {
@@ -52,18 +49,15 @@ export function usePlatformTelemetry() {
           
           if (error) {
             console.error('[Sync] Error merging anonymous data:', error);
+            toast.error("Error al sincronizar tus datos");
           } else {
-            console.log('[Sync] Successfully merged anonymous data.');
-            
             // Clear cookie
             document.cookie = 'applyboost_anon_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-            
-            // Standard alert to inform user about data sync
-            // In a real app we might use a toast, but this is a solid fallback
-            console.log('[Sync] Anonymous cookie cleared.');
+            toast.success("Tus borradores previos se han sincronizado correctamente");
           }
         } catch (err) {
           console.error('[Sync] Unexpected error during merge:', err);
+          toast.error("Error inesperado en la sincronización");
         } finally {
           isSyncing.current = false;
         }
@@ -71,11 +65,11 @@ export function usePlatformTelemetry() {
     };
 
     // Check immediately on mount if user is already logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: User | null } }) => {
        if (user) syncAnonymousData(user);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
         syncAnonymousData(session.user);
       }
