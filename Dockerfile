@@ -2,6 +2,8 @@
 FROM oven/bun:latest AS base
 WORKDIR /app
 
+ENV NEXT_TELEMETRY_DISABLED=1
+
 # Force IPv4 for apt-get to avoid connection issues on some VPS
 RUN echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 

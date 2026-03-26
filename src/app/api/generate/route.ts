@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { parseCV } from "@/lib/parsers/cvParser";
 import { scrapeJobUrl, normalizeJobDescription } from "@/lib/parsers/jobParser";
