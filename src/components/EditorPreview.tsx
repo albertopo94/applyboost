@@ -2,15 +2,13 @@
 
 import { 
   Download, 
-  AlertCircle, 
-  Sparkles, 
-  ArrowRight,
-  Layout,
   RefreshCw,
-  LogIn
+  LogIn,
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEditor } from "@/hooks/useEditor";
+import { cn } from "@/lib/utils";
 import { PremiumScoreHeader } from "./editor/PremiumScoreHeader";
 import { TabSwitcher } from "./editor/TabSwitcher";
 import { AuditSidebar } from "./editor/AuditSidebar";
@@ -184,9 +182,3 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
   );
 }
 
-// Helper function moved here to keep it simple
-function cn(...inputs: (string | undefined | null | false)[]) {
-  const { twMerge } = require("tailwind-merge");
-  const { clsx } = require("clsx");
-  return twMerge(clsx(inputs));
-}

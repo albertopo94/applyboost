@@ -1,4 +1,5 @@
-# Dependencies
+# Bun
+bun.lockb
 node_modules/
 .pnp
 .pnp.js
@@ -25,16 +26,7 @@ yarn-error.log*
 bun-debug.log*
 
 # Environment files — CRITICAL: never commit secrets (SDD §9.2, Stack §🔑)
-.env.*
-!.env.example
-.env.*
-!.env.example
-.env.*
-!.env.example
-.env.*
-!.env.example
-.env.*
-!.env.example
+.env
 .env.*
 !.env.example
 
