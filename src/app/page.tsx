@@ -10,21 +10,9 @@ export default async function Home() {
   await headers(); // Fuerza dinamismo real
   const supabase = await createClient();
   
-  let initialStats = null;
-  
-  if (supabase) {
-    try {
-      const { data } = await supabase
-        .from("platform_stats")
-        .select("page_views, cvs_generated, cvs_downloaded")
-        .eq("id", 1)
-        .single();
-      
-      initialStats = data;
-    } catch (error) {
-      console.error("Error fetching initial stats:", error);
-    }
-  }
+  const { data: stats, error } = await supabase.from('platform_stats').select('*').single();
+  console.log('[Server] Stats from DB:', stats);
+  if (error) console.error('[Server] DB Error:', error);
 
-  return <HomeClient initialStats={initialStats} />;
+  return <HomeClient initialStats={stats} />;
 }
