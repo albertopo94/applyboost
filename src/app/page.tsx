@@ -12,12 +12,22 @@ export default async function Home() {
   // Usamos el cliente admin para asegurar que la lectura siempre funcione
   const adminClient = createAdminClient();
   
-  // Leemos el valor actual
-  const { data: stats } = await adminClient
-    .from('platform_stats')
-    .select('*')
-    .eq('id', 1)
-    .single();
+  // Leemos el valor actual con fallback para que no bloquee el build
+  let stats = { cvs_generated: 0, page_views: 0 };
+  
+  try {
+    const { data } = await adminClient
+      .from('platform_stats')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    
+    if (data) {
+      stats = data;
+    }
+  } catch (error) {
+    console.error("Error fetching platform stats:", error);
+  }
 
   return <HomeClient initialStats={stats} />;
 }
