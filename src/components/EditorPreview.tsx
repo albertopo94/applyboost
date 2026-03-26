@@ -32,6 +32,7 @@ interface EditorPreviewProps {
     diff: DiffItem[];
     keywords: string[];
     falta_dato_fields?: string[];
+    usage_count?: number;
     free_uses_remaining?: number;
   };
 }
@@ -56,6 +57,11 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
     t
   } = useEditor(data);
 
+  // Calculate remaining uses based on usage_count (3 is the MVP limit)
+  const remainingUses = data.free_uses_remaining !== undefined 
+    ? data.free_uses_remaining 
+    : (3 - (data.usage_count || 0));
+
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/20">
       <main className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
@@ -63,23 +69,25 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
           
           {/* Editor Area */}
           <div className="lg:col-span-8 space-y-6">
+            
+            {/* Quota Banner */}
             {isAnonymous && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-sm"
+                className="mb-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
-                    <Zap className="h-5 w-5" />
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <Zap className="h-4 w-4 fill-current" />
                   </div>
-                  <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                    {t('editor.quota_banner', { count: data.free_uses_remaining ?? 0 })}
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    {t('editor.quota_banner', { count: remainingUses })}
                   </p>
                 </div>
                 <button
                   onClick={handleLogin}
-                  className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm ml-4 whitespace-nowrap"
+                  className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline px-2 py-1"
                 >
                   {t('editor.login_with_google')}
                 </button>
@@ -205,4 +213,3 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
     </div>
   );
 }
-
