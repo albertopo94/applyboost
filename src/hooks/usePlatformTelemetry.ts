@@ -5,8 +5,29 @@ import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 
 export function usePlatformTelemetry() {
   const isSyncing = useRef(false);
+  const hasTrackedVisit = useRef(false);
 
   useEffect(() => {
+    // 1. Telemetría de visitas (una vez por sesión)
+    const trackVisit = async () => {
+      if (hasTrackedVisit.current) return;
+      
+      const sessionTracked = sessionStorage.getItem('has_tracked_page_view');
+      if (!sessionTracked) {
+        try {
+          const res = await fetch('/api/stats/visit', { method: 'POST' });
+          if (res.ok) {
+            sessionStorage.setItem('has_tracked_page_view', 'true');
+            hasTrackedVisit.current = true;
+          }
+        } catch (err) {
+          console.error("Error tracking visit:", err);
+        }
+      }
+    };
+
+    trackVisit();
+
     const supabase = createClient();
     if (!supabase) return;
 
