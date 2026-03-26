@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/db/supabase-browser";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { GenerateResponse } from "@/lib/llm/types";
+import { toast } from "sonner";
 
 type Tab = "cv" | "cl";
 
@@ -112,11 +113,13 @@ export function useEditor(data: GenerateResponse) {
         const errorData = await res.json();
         if (errorData.error === "LIMIT_REACHED") {
           setHasLimitReached(true);
+          toast.error(t("editor.limit_reached") || "Límite de descargas alcanzado.");
           return;
         }
       }
 
       if (res.status === 401) {
+        toast.error(t("editor.unauthorized") || "Debes iniciar sesión para descargar.");
         if (!isAnonymous) {
           window.location.href = "/login";
         }
@@ -133,10 +136,11 @@ export function useEditor(data: GenerateResponse) {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      toast.success(t("editor.download_success") || "Archivo descargado con éxito.");
 
     } catch (err) {
       console.error("Download error:", err);
-      alert(t("editor.export_error") || "Error al exportar el documento.");
+      toast.error(t("editor.export_error") || "Error al exportar el documento.");
     } finally {
       setIsDownloading(false);
     }

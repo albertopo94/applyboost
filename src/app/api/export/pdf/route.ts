@@ -15,11 +15,12 @@ import puppeteer from "puppeteer";
  */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verificar Autenticación
-    const user = await requireAuth();
+    // 1. Verificar Autenticación (Permitir anónimos para el MVP)
+    const { user, anonymousId } = await requireAuth({ allowAnonymous: true });
+    const effectiveUserId = user?.id || anonymousId;
 
     // 2. Verificar Paywall
-    const paywall = await checkPaywall(user.id);
+    const paywall = await checkPaywall(effectiveUserId);
     if (!paywall.allowed) {
       return NextResponse.json({ 
         error: "PAYWALL: No exports available",
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const templateMode = body.templateMode || "simple";
     const text = body.text;
+    const type = body.type || "cv"; // cv | cl
 
     if (!text) {
       return NextResponse.json({ error: "Missing text content" }, { status: 400 });
@@ -38,14 +40,16 @@ export async function POST(req: NextRequest) {
     // 3. Generar HTML según el template
     let html = "";
 
-    if (templateMode === "modern") {
+    // IMPORTANTE: Si es Carta de Presentación (cl), NO usamos el parser estructurado
+    // aunque esté en modo modern, porque rompe el esquema del CV.
+    if (templateMode === "modern" && type !== "cl") {
       // MAGIC PARSER: Convert plain text to structured JSON using fast LLM
-      console.log(`[PDF_EXPORT] Generating MODERN PDF for user ${user.id}...`);
+      console.log(`[PDF_EXPORT] Generating MODERN PDF for user ${effectiveUserId}...`);
       const structuredData = await parseTextToStructuredCV(text);
       html = buildModernCvHtml(structuredData);
     } else {
       // SIMPLE TEMPLATE (Markdown-ish to HTML)
-      console.log(`[PDF_EXPORT] Generating SIMPLE PDF for user ${user.id}...`);
+      console.log(`[PDF_EXPORT] Generating SIMPLE PDF (or CL) for user ${effectiveUserId}...`);
       const formattedHtml = text
         .split('\n')
         .map((line: string) => {
@@ -109,22 +113,35 @@ export async function POST(req: NextRequest) {
     const { data: exportData } = await supabase
       .from("user_exports")
       .select("exports_available, subscription_active")
-      .eq("user_id", user.id)
+      .eq("user_id", effectiveUserId)
       .single();
 
     if (exportData && !exportData.subscription_active) {
       await supabase
         .from("user_exports")
         .update({ exports_available: exportData.exports_available - 1 })
-        .eq("user_id", user.id);
+        .eq("user_id", effectiveUserId);
     }
 
-    const adminClient = createAdminClient();
-    const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
-    const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
-    await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
+    // 6. Incrementar Estadísticas (No bloqueante con timeout)
+    const updateStats = async () => {
+      try {
+        const adminClient = createAdminClient();
+        const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
+        const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
+        await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
+      } catch (e) {
+        console.error("[STATS_UPDATE_ERROR]", e);
+      }
+    };
 
-    // 6. Retornar PDF
+    // Race de 2 segundos para no bloquear la descarga
+    Promise.race([
+      updateStats(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+    ]).catch(e => console.warn("[STATS_RACE_TIMEOUT]", e.message));
+
+    // 7. Retornar PDF
     return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {

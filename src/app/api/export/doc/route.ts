@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/db/supabase-server";
 import { generateDOCX } from "@/lib/render/docGenerator";
+import { requireAuth } from "@/lib/auth/auth-utils";
 import type { CVDataObject } from "@/lib/llm/types";
 
 /**
@@ -12,13 +13,9 @@ import type { CVDataObject } from "@/lib/llm/types";
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    
-    // 1. Verify Authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // 1. Verify Authentication (Permitir anónimos para el MVP)
+    const { user, anonymousId } = await requireAuth({ allowAnonymous: true });
+    const effectiveUserId = user?.id || anonymousId;
 
     // 2. Fetch CV Payload
     const cvData = (await req.json()) as CVDataObject;
@@ -27,10 +24,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Verify Export Balance (Paywall block)
+    const supabase = await createClient();
     const { data: exportData, error: dbError } = await supabase
       .from("user_exports")
       .select("exports_available, subscription_active")
-      .eq("user_id", user.id)
+      .eq("user_id", effectiveUserId)
       .single();
 
     if (dbError || !exportData) {
@@ -50,15 +48,28 @@ export async function POST(req: NextRequest) {
       await supabase
         .from("user_exports")
         .update({ exports_available: newBalance })
-        .eq("user_id", user.id);
+        .eq("user_id", effectiveUserId);
     }
 
-    const adminClient = createAdminClient();
-    const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
-    const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
-    await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
+    // 6. Incrementar Estadísticas (No bloqueante con timeout)
+    const updateStats = async () => {
+      try {
+        const adminClient = createAdminClient();
+        const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
+        const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
+        await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
+      } catch (e) {
+        console.error("[STATS_UPDATE_ERROR]", e);
+      }
+    };
 
-    // 6. Return raw binary buffer with correct Content-Type (docx)
+    // Race de 2 segundos para no bloquear la descarga
+    Promise.race([
+      updateStats(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+    ]).catch(e => console.warn("[STATS_RACE_TIMEOUT]", e.message));
+
+    // 7. Return raw binary buffer with correct Content-Type (docx)
     return new NextResponse(docBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
