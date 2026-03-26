@@ -63,6 +63,29 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
           
           {/* Editor Area */}
           <div className="lg:col-span-8 space-y-6">
+            {isAnonymous && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 rounded-2xl p-4 mb-6 flex items-center justify-between shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
+                    <Zap className="h-5 w-5" />
+                  </div>
+                  <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                    {t('editor.quota_banner', { count: data.free_uses_remaining ?? 0 })}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogin}
+                  className="text-blue-600 dark:text-blue-400 font-bold hover:underline text-sm ml-4 whitespace-nowrap"
+                >
+                  {t('editor.login_with_google')}
+                </button>
+              </motion.div>
+            )}
+
             <PremiumScoreHeader 
               original={data.score_original} 
               optimized={data.score_optimizado} 
@@ -114,16 +137,6 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                      saveStatus === "saved" ? t('editor.status_saved') : t('editor.status_idle')}
                   </span>
                 </div>
-
-                {isAnonymous && (
-                  <button
-                    onClick={handleLogin}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-500/25"
-                  >
-                    <LogIn className="h-3.5 w-3.5" />
-                    <span>{t('editor.login_with_google')}</span>
-                  </button>
-                )}
               </div>
             </div>
 

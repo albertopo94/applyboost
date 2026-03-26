@@ -51,6 +51,7 @@
     "anonymous_limit_reached": "Limite di utilizzo anonimo raggiunto",
     "login_with_google": "Accedi con Google",
     "free_uses_remaining": "Ti rimangono {count} utilizzi gratuiti",
+    "quota_banner": "Modalità ospite: Ti rimangono {count} ottimizzazioni gratuite. Accedi per ottenerne altre.",
     "login_to_save": "Accedi per salvare ed esportare",
     "download_pdf": "Scarica PDF",
     "price_docx": "Controlla il prezzo in DOCX",

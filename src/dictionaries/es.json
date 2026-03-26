@@ -51,6 +51,7 @@
     "anonymous_limit_reached": "Límite de uso anónimo alcanzado",
     "login_with_google": "Iniciar sesión con Google",
     "free_uses_remaining": "Te quedan {count} usos gratuitos",
+    "quota_banner": "Modo invitado: Te quedan {count} optimizaciones gratuitas. Inicia sesión para obtener más.",
     "login_to_save": "Inicia sesión para Guardar y Exportar",
     "download_pdf": "Descargar PDF",
     "price_docx": "Consultar precio de DOCX",

@@ -51,6 +51,7 @@
     "anonymous_limit_reached": "Anonymous limit reached",
     "login_with_google": "Login with Google",
     "free_uses_remaining": "{count} free uses remaining",
+    "quota_banner": "Guest mode: You have {count} free optimizations remaining. Log in to get more.",
     "login_to_save": "Login to Save & Export",
     "download_pdf": "Download PDF",
     "price_docx": "Check DOCX price",
