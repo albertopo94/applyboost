@@ -64,7 +64,6 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           <QuotaBanner 
             remainingUses={remainingUses} 
             isAnonymous={isAnonymous} 
-            onLogin={handleLogin} 
           />
         )}
 
