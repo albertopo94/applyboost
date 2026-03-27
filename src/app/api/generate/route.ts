@@ -2,10 +2,14 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { parseCV } from "@/lib/parsers/cvParser";
 import { scrapeJobUrl, normalizeJobDescription } from "@/lib/parsers/jobParser";
+import { extractJobDescription } from "@/lib/job-sources/orchestrator";
 import { buildMasterPrompt } from "@/lib/prompt/promptMaestro";
 import { requireAuth } from "@/lib/auth/auth-utils";
 import { UsageService } from "@/lib/services/usageService";
 import { GenerationService } from "@/lib/services/generationService";
+
+// Feature Flags
+const ENABLE_JOB_SOURCE_ORCHESTRATOR = process.env.ENABLE_JOB_SOURCE_ORCHESTRATOR === "true";
 
 export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
