@@ -44,6 +44,16 @@ export async function scrapeJobUrl(url: string): Promise<string> {
     if (cleanText.length < 100) {
       throw new Error("JOB_URL_UNREADABLE: Extracted text is too short (likely a login wall).");
     }
+    const normalizedUrl = url.toLowerCase();
+    const normalizedText = cleanText.toLowerCase();
+    if (
+      normalizedUrl.includes("linkedin.com") &&
+      normalizedText.includes("linkedin and 3rd parties use essential and non-essential cookies") &&
+      !normalizedText.includes("about the job") &&
+      !normalizedText.includes("acerca del empleo")
+    ) {
+      throw new Error("JOB_URL_UNREADABLE: LinkedIn returned a cookie/login wall instead of a job posting.");
+    }
 
     return cleanText;
   } catch (error) {
