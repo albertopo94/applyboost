@@ -10,15 +10,24 @@ export async function resolveAlternativeUrl({
   try {
     const urlObj = new URL(url);
 
-    // LinkedIn Strategy: Convert /jobs/view/ID/ to /jobs/view/ID?refId=... (canonical/public variant)
-    // or sometimes /jobs/search/ or similar. 
-    // For now, let's implement the most common transformation.
-    if (urlObj.hostname.includes("linkedin.com") && urlObj.pathname.includes("/jobs/view/")) {
-      // If we are already on a job view, sometimes adding parameters or changing to a guest URL helps.
-      // But for the MVP, let's just return null if we don't have a better one yet.
-      // We'll expand this as we learn which variants work best.
-      console.log(`[RESOLVER_C][${requestId}] LinkedIn URL detected, no alternative transformation yet.`);
-      return null;
+    // LinkedIn Strategy: Convert private/session URLs to public ones
+    // Common case 1: /jobs/collections/recommended/?currentJobId=4381999449
+    // Common case 2: /jobs/view/4381999449/?...
+    if (urlObj.hostname.includes("linkedin.com")) {
+      const currentJobId = urlObj.searchParams.get("currentJobId");
+      
+      // If we have currentJobId, we can reconstruct the public /view/ URL
+      if (currentJobId && /^\d+$/.test(currentJobId)) {
+        const altUrl = `https://www.linkedin.com/jobs/view/${currentJobId}/`;
+        console.log(`[RESOLVER_C][${requestId}] LinkedIn URL transformation: from private to public /view/${currentJobId}/`);
+        return altUrl;
+      }
+
+      // If we are already on /jobs/view/ we check if we can clean it or if there's another variant
+      if (urlObj.pathname.includes("/jobs/view/")) {
+        // For now, if we are already in /view/ and it failed, we don't have a better one yet.
+        return null;
+      }
     }
 
     return null;
