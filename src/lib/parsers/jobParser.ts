@@ -1,5 +1,73 @@
 import * as cheerio from "cheerio";
 
+const WALL_PATTERNS = [
+  "linkedin and 3rd parties use essential and non-essential cookies",
+  "use essential and non-essential cookies",
+  "accept cookies",
+  "cookie policy",
+  "privacy policy",
+  "terms of use",
+  "sign in",
+  "join now",
+  "log in",
+  "consent",
+  "accept all",
+  "reject all",
+  "captcha",
+  "enable javascript",
+];
+
+const JOB_SIGNAL_PATTERNS = [
+  "job description",
+  "about the role",
+  "responsibilities",
+  "requirements",
+  "qualifications",
+  "skills",
+  "experience",
+  "what we offer",
+  "salary",
+  "location",
+  "full-time",
+  "part-time",
+  "apply",
+  "main responsibilities",
+  "essential requirements",
+  "acerca del empleo",
+  "requisitos",
+  "responsabilidades",
+  "descrizione del ruolo",
+  "requisiti",
+];
+
+function countMatches(text: string, patterns: string[]): number {
+  return patterns.reduce((count, pattern) => (text.includes(pattern) ? count + 1 : count), 0);
+}
+
+function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function looksLikeWallOrCookieContent(url: string, cleanText: string): boolean {
+  const normalized = cleanText.toLowerCase();
+  const wallHits = countMatches(normalized, WALL_PATTERNS);
+  const jobHits = countMatches(normalized, JOB_SIGNAL_PATTERNS);
+  const hostname = getHostname(url);
+  const isLinkedIn = hostname.includes("linkedin.com");
+
+  // LinkedIn walls tend to have repeated cookie/login text with very low job semantics.
+  const linkedInWallLikely = isLinkedIn && wallHits >= 2 && jobHits < 3;
+
+  // Generic consent/login pages across sites.
+  const genericWallLikely = wallHits >= 4 && jobHits <= 1 && cleanText.length < 1800;
+
+  return linkedInWallLikely || genericWallLikely;
+}
+
 /**
  * Scrapes a job description from a public URL.
  * SDD §7.1: Uses Cheerio to extract text from <body>.
@@ -43,6 +111,9 @@ export async function scrapeJobUrl(url: string): Promise<string> {
 
     if (cleanText.length < 100) {
       throw new Error("JOB_URL_UNREADABLE: Extracted text is too short (likely a login wall).");
+    }
+    if (looksLikeWallOrCookieContent(url, cleanText)) {
+      throw new Error("JOB_URL_UNREADABLE: Extracted content appears to be a login/cookie wall, not a job posting.");
     }
 
     return cleanText;
