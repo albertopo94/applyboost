@@ -30,6 +30,9 @@ interface EditorPreviewProps {
 }
 
 export default function EditorPreview({ data }: EditorPreviewProps) {
+  // Build Guard: Protect against null data during static generation
+  if (!data) return null;
+
   const {
     activeTab,
     setActiveTab,
