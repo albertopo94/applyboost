@@ -8,6 +8,7 @@ import { UsageService } from "@/lib/services/usageService";
 import { GenerationService } from "@/lib/services/generationService";
 
 export async function POST(req: Request) {
+  const requestId = crypto.randomUUID();
   try {
     const formData = await req.formData();
     const bodyAnonId = formData.get("anonymous_id") as string | null;
@@ -17,13 +18,14 @@ export async function POST(req: Request) {
       allowAnonymous: true, 
       anonymousId: bodyAnonId || undefined 
     });
+    console.log(`[API_GENERATE][${requestId}] Request started for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}.`);
     
     // Check for required environment variables
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey || serviceRoleKey === "your-service-role-key-here") {
-      console.error("[API_GENERATE] SUPABASE_SERVICE_ROLE_KEY is missing.");
+      console.error(`[API_GENERATE][${requestId}] SUPABASE_SERVICE_ROLE_KEY is missing.`);
       return NextResponse.json(
-        { error: { code: "ENV_ERROR", message: "Falta configurar SUPABASE_SERVICE_ROLE_KEY", request_id: Date.now().toString() } },
+        { error: { code: "ENV_ERROR", message: "Falta configurar SUPABASE_SERVICE_ROLE_KEY", request_id: requestId } },
         { status: 500 }
       );
     }
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
       cvText = await parseCV(buffer, cvFile.type);
     } else if (!cvText || cvText.trim().length === 0) {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Falta proporcionar tu CV", request_id: Date.now().toString() } },
+        { error: { code: "BAD_REQUEST", message: "Falta proporcionar tu CV", request_id: requestId } },
         { status: 400 }
       );
     }
@@ -65,14 +67,16 @@ export async function POST(req: Request) {
         );
       } catch (err: any) {
         if (err.message === "SCRAPER_BLOCKED") {
+          console.warn(`[API_GENERATE][${requestId}] SCRAPER_BLOCKED for URL=${jobUrl ?? "N/A"}`);
           return NextResponse.json(
-            { error: { code: "SCRAPER_BLOCKED", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: Date.now().toString() } },
+            { error: { code: "SCRAPER_BLOCKED", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: requestId } },
             { status: 403 }
           );
         }
         if (typeof err?.message === "string" && err.message.startsWith("JOB_URL_UNREADABLE")) {
+          console.warn(`[API_GENERATE][${requestId}] JOB_URL_UNREADABLE for URL=${jobUrl ?? "N/A"} reason="${err.message}"`);
           return NextResponse.json(
-            { error: { code: "JOB_URL_UNREADABLE", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: Date.now().toString() } },
+            { error: { code: "JOB_URL_UNREADABLE", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: requestId } },
             { status: 422 }
           );
         }
@@ -80,7 +84,7 @@ export async function POST(req: Request) {
       }
     } else {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Falta proporcionar la oferta laboral", request_id: Date.now().toString() } },
+        { error: { code: "BAD_REQUEST", message: "Falta proporcionar la oferta laboral", request_id: requestId } },
         { status: 400 }
       );
     }
@@ -98,7 +102,7 @@ export async function POST(req: Request) {
       outputLanguage: outputLanguageRaw as "es" | "en" | "it" | "auto"
     });
 
-    console.log(`[API_GENERATE] Generating for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}...`);
+    console.log(`[API_GENERATE][${requestId}] Generating for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}...`);
     
     const genResult = await GenerationService.generateAndStore({
       userId,
@@ -128,9 +132,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const msg = error?.message || "Error desconocido durante la generación";
-    console.error("[API_GENERATE] Error:", error);
+    console.error(`[API_GENERATE][${requestId}] Error:`, error);
     return NextResponse.json(
-      { error: { code: "GENERATE_ERROR", message: msg, request_id: Date.now().toString() } },
+      { error: { code: "GENERATE_ERROR", message: msg, request_id: requestId } },
       { status: 500 }
     );
   }
