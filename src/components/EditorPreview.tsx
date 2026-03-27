@@ -134,17 +134,6 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 h-7 px-3 rounded-full bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    saveStatus === "saving" ? "bg-amber-400 animate-pulse" : 
-                    saveStatus === "saved" ? "bg-green-500" : "bg-slate-300 dark:bg-slate-600"
-                  )} />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    {saveStatus === "saving" ? t('editor.status_saving') : 
-                     saveStatus === "saved" ? t('editor.status_saved') : t('editor.status_idle')}
-                  </span>
-                </div>
               </div>
             </div>
 

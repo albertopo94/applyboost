@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
       // 1. Verificar propiedad y autenticación
       await requireOwnership(generation_id);
 
-      // 2. Ejecutar actualización
+      // [POST-MVP]: Habilitar guardado persistente aquí cuando se decida guardar contenido de CVs
+      /*
       const supabase = await createClient();
       const { error } = await supabase
         .from("cv_versions")
@@ -34,8 +35,12 @@ export async function POST(req: NextRequest) {
         console.error("[API_CV_UPDATE] Supabase Error:", error);
         return NextResponse.json({ error: "Failed to update record" }, { status: 500 });
       }
+      */
 
-      return NextResponse.json({ message: "Success" }, { status: 200 });
+      return NextResponse.json({ 
+        message: "CV persistence skipped (minimal data policy active)", 
+        skipped: true 
+      }, { status: 200 });
 
     } catch (authError: any) {
       if (authError.message.includes("Unauthorized")) {

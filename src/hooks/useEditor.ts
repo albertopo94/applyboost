@@ -20,6 +20,9 @@ export function useEditor(data: GenerateResponse) {
 
   const hasCL = !!data.cover_letter;
 
+  // Feature Flag: Set to true when we want to start persisting CV text changes to DB (Post-MVP)
+  const ENABLE_AUTO_SAVE = false;
+
   useEffect(() => {
     if (!supabase) return;
     const checkUser = async () => {
@@ -38,7 +41,7 @@ export function useEditor(data: GenerateResponse) {
 
   // Auto-save debounce logic
   useEffect(() => {
-    if (isAnonymous) return;
+    if (isAnonymous || !ENABLE_AUTO_SAVE) return;
 
     const isCvChanged = cvText !== data.cv_optimizado;
     const isClChanged = clText !== (data.cover_letter || "");
