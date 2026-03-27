@@ -74,9 +74,6 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                   <span className="text-[10px] font-black text-blue-700/60 dark:text-blue-400/60 uppercase tracking-wider">{t('editor.editable')}</span>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-3">
-              </div>
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative">
@@ -88,6 +85,9 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                   activeTab={activeTab}
                 />
               </div>
+              
+              {/* Bottom Gradient Fade to indicate scrollable content */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
             </div>
           </div>
 
