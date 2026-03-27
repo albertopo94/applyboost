@@ -63,7 +63,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
 
             <TabSwitcher 
               activeTab={activeTab} 
-              setActiveTab={setActiveTab} 
+              onTabChange={setActiveTab} 
               hasCL={hasCL} 
             />
 
@@ -96,13 +96,9 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             <ExportPanel 
               templateMode={templateMode}
               setTemplateMode={setTemplateMode}
-              onDownload={handleDownload}
-              isDownloading={!!downloadingType}
+              handleDownload={handleDownload}
               downloadingType={downloadingType}
               hasCL={hasCL}
-              isAnonymous={isAnonymous}
-              hasLimitReached={hasLimitReached}
-              onLogin={handleLogin}
             />
             
             <AuditSidebar 
