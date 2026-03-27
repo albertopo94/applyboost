@@ -58,11 +58,22 @@ export async function POST(req: Request) {
     } else if (jobUrl && jobUrl.trim().length > 0) {
       try {
         jobText = await scrapeJobUrl(jobUrl);
+        const normalizedJobUrl = jobUrl.trim();
+        const preview = jobText.slice(0, 180).replace(/\s+/g, " ");
+        console.log(
+          `[SCRAPER_AUDIT] URL=${normalizedJobUrl} extracted_length=${jobText.length} preview="${preview}${jobText.length > 180 ? "..." : ""}"`
+        );
       } catch (err: any) {
         if (err.message === "SCRAPER_BLOCKED") {
           return NextResponse.json(
             { error: { code: "SCRAPER_BLOCKED", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: Date.now().toString() } },
             { status: 403 }
+          );
+        }
+        if (typeof err?.message === "string" && err.message.startsWith("JOB_URL_UNREADABLE")) {
+          return NextResponse.json(
+            { error: { code: "JOB_URL_UNREADABLE", message: "No pudimos leer los detalles del empleo. Por favor, pega la descripción manualmente.", request_id: Date.now().toString() } },
+            { status: 422 }
           );
         }
         throw err;
