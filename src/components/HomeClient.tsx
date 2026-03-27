@@ -40,15 +40,6 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
-  const handleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/api/auth/callback",
-      },
-    });
-  };
-
   // Calculate remaining uses based on generationData or default MVP limit (3)
   const remainingUses = generationData?.free_uses_remaining !== undefined 
     ? generationData.free_uses_remaining 
