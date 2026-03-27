@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { classifyJobSourceDomain } from "./domainClassifier";
+import { classifyJobSourceDomain } from "../../../src/lib/job-sources/domainClassifier";
 
 describe("domainClassifier", () => {
   it("should classify LinkedIn URLs correctly", () => {

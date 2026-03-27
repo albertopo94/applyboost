@@ -1,5 +1,6 @@
 import { classifyJobSourceDomain } from "./domainClassifier";
 import { extractLinkedIn } from "./extractors/linkedinExtractor";
+import { extractIndeed } from "./extractors/indeedExtractor";
 import { extractGeneric } from "./extractors/genericExtractor";
 import { resolveAlternativeUrl } from "./resolvers/alternativeResolver";
 import type { JobExtractResult, JobOrchestratorInput } from "./types";
@@ -23,8 +24,10 @@ export async function extractJobDescription({
   let result: JobExtractResult;
   if (domain === "linkedin") {
     result = await extractLinkedIn(input);
+  } else if (domain === "indeed") {
+    result = await extractIndeed(input);
   } else {
-    // InfoJobs, Indeed, and Unknown currently use Generic B
+    // InfoJobs and Unknown currently use Generic B
     result = await extractGeneric(input);
   }
 

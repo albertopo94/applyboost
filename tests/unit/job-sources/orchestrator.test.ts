@@ -1,22 +1,28 @@
-import { describe, expect, it, mock, afterEach } from "bun:test";
-import { extractJobDescription } from "./orchestrator";
+import { describe, expect, it, mock } from "bun:test";
+import { extractJobDescription } from "../../../src/lib/job-sources/orchestrator";
 
-// Mocking extractors and resolvers to isolate orchestrator logic
-mock.module("./extractors/linkedinExtractor", () => ({
+// Mocking extractors and resolvers relative to the orchestrator file location in src/
+mock.module("../../../src/lib/job-sources/extractors/linkedinExtractor", () => ({
   extractLinkedIn: async ({ url }: { url: string }) => {
     if (url.includes("fail")) return { status: "blocked", domain: "linkedin", extractor: "mock", confidence: 0.1, strategyPath: "B_fail_C_fail_A" };
     return { status: "ok", text: "LinkedIn Job Text", domain: "linkedin", extractor: "mock", confidence: 0.95, strategyPath: "B_ok" };
   }
 }));
 
-mock.module("./extractors/genericExtractor", () => ({
+mock.module("../../../src/lib/job-sources/extractors/indeedExtractor", () => ({
+  extractIndeed: async ({ url }: { url: string }) => {
+    return { status: "ok", text: "Indeed Job Text", domain: "indeed", extractor: "mock", confidence: 0.9, strategyPath: "B_ok" };
+  }
+}));
+
+mock.module("../../../src/lib/job-sources/extractors/genericExtractor", () => ({
   extractGeneric: async ({ url }: { url: string }) => {
     if (url.includes("fail")) return { status: "unreadable", domain: "generic", extractor: "mock", confidence: 0.1, strategyPath: "B_fail_C_fail_A" };
     return { status: "ok", text: "Generic Job Text", domain: "generic", extractor: "mock", confidence: 0.6, strategyPath: "B_ok" };
   }
 }));
 
-mock.module("./resolvers/alternativeResolver", () => ({
+mock.module("../../../src/lib/job-sources/resolvers/alternativeResolver", () => ({
   resolveAlternativeUrl: async ({ url }: { url: string }) => {
     if (url.includes("has-alt")) return "https://www.linkedin.com/jobs/view/999/";
     return null;
