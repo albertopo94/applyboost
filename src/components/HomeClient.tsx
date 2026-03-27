@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Wizard from "@/components/Wizard";
 import EditorPreview from "@/components/EditorPreview";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Header } from "@/components/layout/Header";
+import { QuotaBanner } from "@/components/layout/QuotaBanner";
 import SocialProofTicker from "@/components/SocialProofTicker";
+import { createClient } from "@/lib/db/supabase-browser";
 
 interface PlatformStats {
   page_views: number;
@@ -21,36 +21,50 @@ interface HomeClientProps {
 export default function HomeClient({ initialStats }: HomeClientProps) {
   const [step, setStep] = useState<"WIZARD" | "RESULT">("WIZARD");
   const [generationData, setGenerationData] = useState<any>(null);
-  const { t } = useLanguage();
+  const [isAnonymous, setIsAnonymous] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAnonymous(!user);
+    };
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAnonymous(!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/api/auth/callback",
+      },
+    });
+  };
+
+  // Calculate remaining uses based on generationData or default MVP limit (3)
+  const remainingUses = generationData?.free_uses_remaining !== undefined 
+    ? generationData.free_uses_remaining 
+    : (3 - (generationData?.usage_count || 0));
   
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900/40 dark:selection:text-blue-100">
       <div className="w-full max-w-6xl bg-white dark:bg-slate-900/40 shadow-sm dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800">
         
-        {/* Header simple e institucional */}
-        <header className="px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900/60 relative z-10 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.1)]">
-              <span className="text-white font-bold tracking-tighter text-sm">AB</span>
-            </div>
-            <span className="font-bold text-gray-900 dark:text-slate-50 tracking-tight text-lg">{t('header.title')}</span>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {step === "RESULT" && (
-              <button 
-                onClick={() => setStep("WIZARD")}
-                className="text-sm font-semibold text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-50 transition-colors flex items-center gap-1"
-              >
-                ← <span className="hidden sm:inline">{t('header.new_optimization')}</span>
-              </button>
-            )}
-            <div className="flex items-center gap-2">
-              <LanguageSelector />
-              <ThemeToggle />
-            </div>
-          </div>
-        </header>
+        <Header step={step} setStep={setStep} />
+
+        {step === "RESULT" && isAnonymous && (
+          <QuotaBanner 
+            remainingUses={remainingUses} 
+            isAnonymous={isAnonymous} 
+            onLogin={handleLogin} 
+          />
+        )}
 
         {/* Content Area */}
         <div className="p-6 sm:p-10 md:p-14">
