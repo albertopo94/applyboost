@@ -45,7 +45,6 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
     setCvText,
     clText,
     setClText,
-    saveStatus,
     templateMode,
     setTemplateMode,
     downloadingType,
