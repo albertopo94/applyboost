@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { parseCV } from "@/lib/parsers/cvParser";
 import { scrapeJobUrl, normalizeJobDescription } from "@/lib/parsers/jobParser";
+import { extractJobDescriptionOrchestrated } from "@/lib/job-sources/orchestrator";
 import { buildMasterPrompt } from "@/lib/prompt/promptMaestro";
 import { requireAuth } from "@/lib/auth/auth-utils";
 import { UsageService } from "@/lib/services/usageService";
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
     const jobTextFromForm = formData.get("jobText") as string | null;
     let jobText = jobTextFromForm;
     const outputLanguageRaw = (formData.get("outputLanguage") as string) || "auto";
+    const isJobSourceOrchestratorEnabled = process.env.JOB_SOURCE_ORCHESTRATOR === "1";
 
     // 2. Parsing del CV (soporta Drop file o texto pegado)
     if (cvFile && cvFile.size > 0 && !cvText) {
@@ -59,12 +61,32 @@ export async function POST(req: Request) {
       jobText = normalizeJobDescription(jobText);
     } else if (jobUrl && jobUrl.trim().length > 0) {
       try {
-        jobText = await scrapeJobUrl(jobUrl);
-        const normalizedJobUrl = jobUrl.trim();
-        const preview = jobText.slice(0, 180).replace(/\s+/g, " ");
-        console.log(
-          `[SCRAPER_AUDIT] URL=${normalizedJobUrl} extracted_length=${jobText.length} preview="${preview}${jobText.length > 180 ? "..." : ""}"`
-        );
+        if (isJobSourceOrchestratorEnabled) {
+          const result = await extractJobDescriptionOrchestrated({ url: jobUrl, requestId });
+
+          if (result.status === "blocked") {
+            throw new Error("SCRAPER_BLOCKED");
+          }
+
+          if (result.status !== "ok" || !result.text) {
+            const reason = result.reason || "Orchestrator failed to extract a valid job description.";
+            throw new Error(`JOB_URL_UNREADABLE: ${reason}`);
+          }
+
+          jobText = result.text;
+          const normalizedJobUrl = jobUrl.trim();
+          const preview = jobText.slice(0, 180).replace(/\s+/g, " ");
+          console.log(
+            `[SCRAPER_AUDIT] request_id=${requestId} strategy=${result.strategyPath} extractor=${result.extractor} domain=${result.domain} confidence=${result.confidence} URL=${normalizedJobUrl} extracted_length=${jobText.length} preview="${preview}${jobText.length > 180 ? "..." : ""}"`
+          );
+        } else {
+          jobText = await scrapeJobUrl(jobUrl);
+          const normalizedJobUrl = jobUrl.trim();
+          const preview = jobText.slice(0, 180).replace(/\s+/g, " ");
+          console.log(
+            `[SCRAPER_AUDIT] URL=${normalizedJobUrl} extracted_length=${jobText.length} preview="${preview}${jobText.length > 180 ? "..." : ""}"`
+          );
+        }
       } catch (err: any) {
         if (err.message === "SCRAPER_BLOCKED") {
           console.warn(`[API_GENERATE][${requestId}] SCRAPER_BLOCKED for URL=${jobUrl ?? "N/A"}`);
