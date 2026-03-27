@@ -63,8 +63,26 @@ export async function POST(req: Request) {
       jobText = normalizeJobDescription(jobText);
     } else if (jobUrl && jobUrl.trim().length > 0) {
       try {
-        jobText = await scrapeJobUrl(jobUrl);
         const normalizedJobUrl = jobUrl.trim();
+
+        if (ENABLE_JOB_SOURCE_ORCHESTRATOR) {
+          const extraction = await extractJobDescription({ url: normalizedJobUrl, requestId });
+          
+          console.log(`[API_GENERATE][${requestId}] Orchestrator result: status=${extraction.status} domain=${extraction.domain} path=${extraction.strategyPath} extractor=${extraction.extractor} confidence=${extraction.confidence}`);
+
+          if (extraction.status === "ok" && extraction.text) {
+            jobText = extraction.text;
+          } else {
+            // If orchestrator fails (blocked, unreadable, etc.), we map to legacy errors
+            // so the frontend shows the correct "Manual Fallback (A)" message.
+            if (extraction.status === "blocked") throw new Error("SCRAPER_BLOCKED");
+            throw new Error(`JOB_URL_UNREADABLE: ${extraction.reason || "Orchestrator failed"}`);
+          }
+        } else {
+          // Legacy Path
+          jobText = await scrapeJobUrl(normalizedJobUrl);
+        }
+
         const preview = jobText.slice(0, 180).replace(/\s+/g, " ");
         console.log(
           `[SCRAPER_AUDIT] URL=${normalizedJobUrl} extracted_length=${jobText.length} preview="${preview}${jobText.length > 180 ? "..." : ""}"`
