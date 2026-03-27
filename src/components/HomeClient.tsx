@@ -25,6 +25,8 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   const supabase = createClient();
 
   useEffect(() => {
+    if (!supabase) return;
+
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setIsAnonymous(!user);
@@ -36,7 +38,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({

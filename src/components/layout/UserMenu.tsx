@@ -13,6 +13,8 @@ export function UserMenu() {
   const { t } = useLanguage();
 
   useEffect(() => {
+    if (!supabase) return;
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -26,7 +28,7 @@ export function UserMenu() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
