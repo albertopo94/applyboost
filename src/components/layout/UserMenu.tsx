@@ -13,12 +13,21 @@ export function UserMenu() {
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (!supabase) return;
+    // Build Guard: In SSR/Build environment, just stop loading and return
+    if (typeof window === "undefined" || !supabase) {
+      setLoading(false);
+      return;
+    }
 
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (err) {
+        console.error("Auth error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     getUser();
@@ -27,10 +36,13 @@ export function UserMenu() {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const handleLogin = async () => {
+    if (!supabase) return;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -40,10 +52,12 @@ export function UserMenu() {
   };
 
   const handleLogout = async () => {
+    if (!supabase) return;
     await supabase.auth.signOut();
     window.location.reload();
   };
 
+  // While loading, return a simple pulse. During build, this will be bypassed quickly.
   if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
 
   if (!user) {

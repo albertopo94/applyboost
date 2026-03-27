@@ -25,11 +25,18 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!supabase) return;
+    // Build Guard: In SSR/Build environment, just exit
+    if (typeof window === "undefined" || !supabase) {
+      return;
+    }
 
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAnonymous(!user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAnonymous(!user);
+      } catch (err) {
+        console.error("Auth check error:", err);
+      }
     };
     checkUser();
 
@@ -37,7 +44,9 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       setIsAnonymous(!session?.user);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, [supabase]);
 
   // Calculate remaining uses based on generationData or default MVP limit (3)
