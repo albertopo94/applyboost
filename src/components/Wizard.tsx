@@ -124,16 +124,13 @@ export default function Wizard({ onComplete }: WizardProps) {
         )}
 
         {/* Final CTA Area */}
-        <div className="pt-2 flex flex-col gap-3">
+        <div className="pt-2">
           <button
             onClick={handleSubmit}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold tracking-tight py-3.5 px-6 rounded-xl shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.15)] flex items-center justify-center transition-all active:scale-[0.98]"
           >
             {t("hero.cta")}
           </button>
-          <p className="text-center text-[11px] text-gray-500 dark:text-slate-500 font-medium">
-            {t("hero.trust")}
-          </p>
         </div>
 
       </div>
