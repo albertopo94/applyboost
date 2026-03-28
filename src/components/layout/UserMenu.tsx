@@ -17,6 +17,7 @@ export function UserMenu({ onOpenAuth }: UserMenuProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const supabase = createClient();
   const { t } = useLanguage();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -44,30 +45,31 @@ export function UserMenu({ onOpenAuth }: UserMenuProps) {
       setUser(session?.user ?? null);
     });
 
-    // Handle clicks outside to close menu
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.ref?.current?.contains(event.target as Node)) {
+    // Need a robust way for "click outside" in React
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsMenuOpen(false);
       }
     };
 
-    // Need a more robust way for "click outside" in React
-    document.addEventListener("mousedown", (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    });
+    document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
       if (subscription) subscription.unsubscribe();
-      document.removeEventListener("mousedown", () => {});
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [supabase]);
 
   const handleLogout = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
-    window.location.reload();
+    if (!supabase || isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      window.location.reload();
+    } catch (err) {
+      console.error("Logout error:", err);
+      setIsLoggingOut(false);
+    }
   };
 
   if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
@@ -117,10 +119,15 @@ export function UserMenu({ onOpenAuth }: UserMenuProps) {
               <div className="p-2">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors group"
+                  disabled={isLoggingOut}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors group disabled:opacity-50"
                 >
-                  <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                  Cerrar sesión
+                  {isLoggingOut ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  )}
+                  {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
                 </button>
               </div>
             </motion.div>
