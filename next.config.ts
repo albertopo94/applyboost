@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  productionBrowserSourceMaps: false,
   // Reduce parallelization to save RAM
   experimental: {
     workerThreads: false,
