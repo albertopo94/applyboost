@@ -1,5 +1,5 @@
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import { GeminiVisionService } from "@/lib/llm/gemini-vision";
 
 /**
  * Validates if the extracted text meets the minimum requirements.
@@ -14,40 +14,36 @@ function validateExtractedText(text: string): string {
 }
 
 /**
- * Extracts raw text from a PDF Buffer.
- * Relies on pdf-parse (v2.4.5 fork with class syntax).
+ * Extracts raw text from a PDF or Image using Gemini Vision (Ojo de Dios).
  */
-export async function parsePdfToText(buffer: Buffer): Promise<string> {
-  let parser: PDFParse | null = null;
+export async function parseWithGemini(
+  buffer: Buffer, 
+  mimeType: string, 
+  requestId: string
+): Promise<string> {
   try {
-    // In this environment (Bun + Next.js 15), the class syntax is the stable one
-    parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
+    const result = await GeminiVisionService.extractTextFromFile(buffer, mimeType, requestId);
     
-    if (!result || !result.text) {
-      throw new Error("CV_PARSE_ERROR: PDF parser returned empty result.");
+    if (!result || !result.markdown_content) {
+      throw new Error("CV_PARSE_ERROR: Gemini returned empty extraction.");
     }
 
-    return validateExtractedText(result.text);
+    // We combine markdown content with visual metadata (e.g. skill levels) 
+    // to give the optimizer more context.
+    let enrichedText = result.markdown_content;
+    if (result.visual_metadata && result.visual_metadata.length > 0) {
+      enrichedText += "\n\n### Visual Metadata (Interpreted Levels)\n" + result.visual_metadata.join("\n");
+    }
+
+    return validateExtractedText(enrichedText);
   } catch (error: any) {
-    console.error("[parsePdfToText] Error details:", error);
-    
-    // Already wrapped in our custom error
-    if (error instanceof Error && error.message.includes("CV_PARSE_ERROR")) {
+    // Propagate specific OCR errors
+    if (error.message.includes("OCR_FAILED_TIMEOUT")) {
       throw error;
     }
     
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`CV_PARSE_ERROR: Failed to parse PDF file. ${errorMessage}`);
-  } finally {
-    if (parser) {
-      try {
-        await parser.destroy();
-      } catch (err) {
-        // Non-fatal, just log it
-        console.warn("[parsePdfToText] Error destroying parser:", err);
-      }
-    }
+    console.error(`[parseWithGemini][${requestId}] Error:`, error);
+    throw new Error(`CV_PARSE_ERROR: Failed to extract content using Multimodal AI.`);
   }
 }
 
@@ -70,12 +66,14 @@ export async function parseDocxToText(buffer: Buffer): Promise<string> {
 
 /**
  * Orchestrator for CV parsing based on file type.
+ * SDD: Bifurcates between local parsing (Mammoth) and AI-based OCR (Gemini Vision).
  */
-export async function parseCV(buffer: Buffer, mimeType: string): Promise<string> {
-  if (mimeType === "application/pdf") {
-    return parsePdfToText(buffer);
-  }
-
+export async function parseCV(
+  buffer: Buffer, 
+  mimeType: string, 
+  requestId: string = "unknown"
+): Promise<string> {
+  // 1. DOCX Path (Mammoth - Local, instant, free)
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     mimeType === "application/msword"
@@ -83,9 +81,20 @@ export async function parseCV(buffer: Buffer, mimeType: string): Promise<string>
     return parseDocxToText(buffer);
   }
 
+  // 2. Multimodal Path (PDF, JPG, PNG via Gemini Vision)
+  if (
+    mimeType === "application/pdf" ||
+    mimeType === "image/jpeg" ||
+    mimeType === "image/png" ||
+    mimeType === "image/webp"
+  ) {
+    return parseWithGemini(buffer, mimeType, requestId);
+  }
+
+  // 3. Plain Text Path
   if (mimeType === "text/plain") {
     return validateExtractedText(buffer.toString("utf-8"));
   }
 
-  throw new Error("CV_PARSE_ERROR: Unsupported file format.");
+  throw new Error(`CV_PARSE_ERROR: Unsupported file format (${mimeType}).`);
 }

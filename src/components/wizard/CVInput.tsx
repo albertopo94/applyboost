@@ -23,7 +23,17 @@ export default function CVInput({ cvFile, cvText, onFileChange, onTextChange }: 
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      onFileChange(e.target.files[0]);
+      const file = e.target.files[0];
+      
+      // Validation: 5MB limit for VPS safety (768MB RAM)
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+      if (file.size > MAX_SIZE) {
+        alert(t("wizard.error_file_too_large") || "El archivo es demasiado grande (máx 5MB)");
+        e.target.value = ""; // Reset input
+        return;
+      }
+      
+      onFileChange(file);
     }
   };
 
@@ -43,13 +53,13 @@ export default function CVInput({ cvFile, cvText, onFileChange, onTextChange }: 
           )}
         >
           <UploadCloud className={cn("w-7 h-7 mb-2", cvFile ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-slate-500")} />
-          <span className="text-[13px] font-semibold text-gray-700 dark:text-slate-300">
+          <span className="text-[13px] font-semibold text-gray-700 dark:text-slate-300 text-center px-4">
             {cvFile ? cvFile.name : t("wizard.upload_cta")}
           </span>
           <input 
             ref={fileInputRef} 
             type="file" 
-            accept=".pdf,.doc,.docx" 
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" 
             className="hidden" 
             onChange={handleFileChange} 
           />

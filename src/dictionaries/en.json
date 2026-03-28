@@ -15,7 +15,8 @@
   },
   "wizard": {
     "step1_title": "Your Resume",
-    "upload_cta": "Upload PDF or DOCX",
+    "upload_cta": "Upload PDF, DOCX or Image",
+    "error_file_too_large": "The file is too large (maximum 5MB).",
     "or_paste": "Or paste text",
     "cv_placeholder": "Paste your CV content here...",
     "step2_title": "The Job Offer",

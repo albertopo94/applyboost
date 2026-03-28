@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // 2. Parsing del CV (soporta Drop file o texto pegado)
     if (cvFile && cvFile.size > 0 && !cvText) {
       const buffer = Buffer.from(await cvFile.arrayBuffer());
-      cvText = await parseCV(buffer, cvFile.type);
+      cvText = await parseCV(buffer, cvFile.type, requestId);
     } else if (!cvText || cvText.trim().length === 0) {
       return NextResponse.json(
         { error: { code: "BAD_REQUEST", message: "Falta proporcionar tu CV", request_id: requestId } },

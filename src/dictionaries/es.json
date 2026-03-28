@@ -15,7 +15,8 @@
   },
   "wizard": {
     "step1_title": "Tu Currículum",
-    "upload_cta": "Subir PDF o DOCX",
+    "upload_cta": "Subir PDF, DOCX o Imagen",
+    "error_file_too_large": "El archivo es demasiado grande (máximo 5MB).",
     "or_paste": "O pega el texto",
     "cv_placeholder": "Pega aquí el contenido de tu CV...",
     "step2_title": "La Oferta Laboral",
