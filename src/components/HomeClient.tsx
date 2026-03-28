@@ -82,7 +82,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           onOpenAuth={() => setShowAuthModal(true)} 
         />
 
-        {step === "RESULT" && isAnonymous && (
+        {isAnonymous && (
           <QuotaBanner 
             remainingUses={remainingUses} 
             isAnonymous={isAnonymous} 
