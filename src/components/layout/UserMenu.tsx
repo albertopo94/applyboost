@@ -74,7 +74,7 @@ export function UserMenu() {
             <span key={i}>
               {part}
               {i < arr.length - 1 && (
-                <span className="bg-gradient-to-r from-[#4285F4] via-[#EA4335] via-[#FBBC05] to-[#34A853] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#4285F4] via-[#EA4335] via-[#FBBC05] via-[#4285F4] via-[#34A853] to-[#EA4335] bg-clip-text text-transparent">
                   Google
                 </span>
               )}
