@@ -45,7 +45,7 @@ export function AuthModal({ isOpen, onClose, onConfirm, isRedirecting }: AuthMod
                 ApplyBoost Identity
               </h3>
               <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                Regístrate o inicia sesión para guardar tus currículums y acceder a funciones avanzadas.
+                Regístrate o inicia sesión para optimizar y generar CVs + CL sin limites.
               </p>
             </div>
 
