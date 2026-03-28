@@ -12,7 +12,6 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
   
-  // Use public origin for absolute URLs if needed, but prefer relative redirects
   const publicOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://www.45.90.237.160.sslip.io";
 
   if (code) {
@@ -48,9 +47,8 @@ export async function GET(request: Request) {
       const user = data.user;
       const anonymousId = cookieStore.get("applyboost_anon_id")?.value;
 
-      // MISSION CRITICAL: Ensure user exists in public.users table before any merge
-      // This fixes race conditions with the database trigger.
-      const ensurePublicUser = async () => {
+      // Sync user to public table and merge anonymous data
+      const ensurePublicUserAndMerge = async () => {
         try {
           await supabase.from('users').upsert({
             id: user.id,
@@ -72,13 +70,31 @@ export async function GET(request: Request) {
         }
       };
 
-      // Execute sync in background - DON'T await it to avoid browser hang
-      ensurePublicUser();
+      ensurePublicUserAndMerge();
 
-      // Absolute redirect to the public domain to ensure browser follows it correctly
       const finalDestination = new URL(next, publicOrigin).toString();
-      console.log(`[AUTH_CALLBACK] Immediate redirect to: ${finalDestination}`);
-      return NextResponse.redirect(finalDestination);
+      console.log(`[AUTH_CALLBACK] Sending JS redirect to: ${finalDestination}`);
+
+      // SUCCESS FIX (Lot AE): Return a small HTML page that performs the redirect via JS.
+      // This solves the hang issue in some browsers when redirecting from Google/Supabase.
+      return new NextResponse(
+        `<html>
+          <head>
+            <title>Redirecting...</title>
+            <script>window.location.href = "${finalDestination}";</script>
+          </head>
+          <body style="background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
+            <div style="text-align: center;">
+              <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #2563eb; border-radius: 50%; animate: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+              <p>Conectando con ApplyBoost...</p>
+            </div>
+            <style>
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>`,
+        { headers: { 'Content-Type': 'text/html' } }
+      );
     }
   }
 
