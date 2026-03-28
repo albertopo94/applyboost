@@ -4,6 +4,7 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Logo } from "@/components/layout/Logo";
 
 interface HeaderProps {
   step: "WIZARD" | "RESULT";
@@ -17,9 +18,7 @@ export function Header({ step, setStep, onOpenAuth }: HeaderProps) {
   return (
     <header className="px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900/60 relative z-20 backdrop-blur-md">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.1)]">
-          <span className="text-white font-bold tracking-tighter text-sm">AB</span>
-        </div>
+        <Logo />
         <span className="font-bold text-gray-900 dark:text-slate-50 tracking-tight text-lg">{t('header.title')}</span>
       </div>
       
