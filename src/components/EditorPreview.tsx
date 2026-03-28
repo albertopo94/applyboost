@@ -70,17 +70,22 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               hasCL={hasCL} 
             />
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-2 py-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                  <span className="text-[10px] font-black text-blue-700/60 dark:text-blue-400/60 uppercase tracking-wider">{t('editor.editable')}</span>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative group">
+              {/* Sticky Status Bar inside the editor */}
+              <div className="sticky top-0 left-0 right-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100/50 dark:border-slate-800/50 px-6 py-3 flex items-center justify-between pointer-events-none select-none">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-3 h-3 rounded-full bg-blue-500/20 animate-ping" />
+                    <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.6)]" />
+                  </div>
+                  <span className="text-[10px] font-black text-blue-700/70 dark:text-blue-400/70 uppercase tracking-[0.1em]">{t('editor.editable')}</span>
                 </div>
+                
+                {/* Visual Hint for Scroll */}
+                <div className="w-12 h-1 rounded-full bg-slate-200/50 dark:bg-slate-800/50 lg:hidden" />
               </div>
-            </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden h-full relative">
-              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar">
+              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar pt-2">
                 <HighlightedContent 
                   content={activeTab === "cv" ? cvText : clText}
                   onUpdate={activeTab === "cv" ? setCvText : setClText}
