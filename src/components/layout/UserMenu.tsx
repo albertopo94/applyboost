@@ -202,7 +202,6 @@ export function UserMenu() {
               </button>
             </motion.div>
           </div>
-        </div>
         )}
       </AnimatePresence>
     </>
