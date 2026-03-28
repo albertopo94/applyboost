@@ -55,20 +55,34 @@ export async function GET(request: Request) {
       const redirectUrl = new URL(next, publicOrigin).toString();
 
       if (anonymousId) {
-        console.log(`[AUTH_CALLBACK] Attempting merge: anon_id ${anonymousId} -> user_id ${data.user.id}`);
+        console.log(`[AUTH_CALLBACK] Scheduling merge: anon_id ${anonymousId} -> user_id ${data.user.id}`);
         
-        // We run this and log errors, but we DON'T wait for it to finish if it's taking too long
-        // or let it block the user's entry.
-        supabase.rpc('merge_anonymous_data', {
-          anon_id: anonymousId,
-          target_user_id: data.user.id
-        }).then(({ error: mergeError }) => {
-          if (mergeError) {
-            console.error("[AUTH_CALLBACK] Deferred merge error:", mergeError.message);
-          } else {
-            console.log("[AUTH_CALLBACK] Deferred merge successful");
+        // Define a self-executing retryable merge function
+        const attemptMerge = async (retries = 3, delay = 1000) => {
+          try {
+            const { error: mergeError } = await supabase.rpc('merge_anonymous_data', {
+              anon_id: anonymousId,
+              target_user_id: data.user.id
+            });
+
+            if (mergeError) {
+              // Code 23503 is foreign_key_violation (user not in public.users yet)
+              if (mergeError.code === '23503' && retries > 0) {
+                console.log(`[AUTH_CALLBACK] User not ready in public table. Retrying merge in ${delay}ms... (${retries} left)`);
+                setTimeout(() => attemptMerge(retries - 1, delay * 1.5), delay);
+              } else {
+                console.error("[AUTH_CALLBACK] Merge failed permanently:", mergeError.message);
+              }
+            } else {
+              console.log("[AUTH_CALLBACK] Merge successful");
+            }
+          } catch (err) {
+            console.error("[AUTH_CALLBACK] Unexpected merge error:", err);
           }
-        });
+        };
+
+        // Start the process but DON'T wait for it (keep it non-blocking for the user)
+        attemptMerge();
       }
 
       console.log(`[AUTH_CALLBACK] Redirecting to: ${redirectUrl}`);
