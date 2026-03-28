@@ -73,34 +73,30 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             {/* Main Editor Container */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-full">
               
-              {/* Scrollable Area */}
-              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar relative">
-                
-                {/* STICKY HEADER - Inside the scrollable area */}
-                <div className="sticky top-0 z-30 w-full px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between pointer-events-none select-none rounded-t-3xl">
-                  <div className="flex items-center gap-2.5">
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute w-3.5 h-3.5 rounded-full bg-blue-500/20 animate-ping" />
-                      <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.7)]" />
-                    </div>
-                    <span className="text-[10px] font-black text-blue-700/70 dark:text-blue-400/70 uppercase tracking-[0.15em] antialiased">
-                      {t('editor.editable')}
-                    </span>
+              {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
+              <div className="absolute top-0 left-0 right-0 z-30 w-full px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between pointer-events-none select-none rounded-t-3xl">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-3.5 h-3.5 rounded-full bg-blue-500/20 animate-ping" />
+                    <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.7)]" />
                   </div>
-                  
-                  {/* Subtle decorative element for mobile hint */}
-                  <div className="w-10 h-1 rounded-full bg-slate-200/40 dark:bg-slate-800/40 sm:hidden" />
+                  <span className="text-[10px] font-black text-blue-700/70 dark:text-blue-400/70 uppercase tracking-[0.15em] antialiased">
+                    {t('editor.editable')}
+                  </span>
                 </div>
+                
+                {/* Subtle decorative element for mobile hint */}
+                <div className="w-10 h-1 rounded-full bg-slate-200/40 dark:bg-slate-800/40 sm:hidden" />
+              </div>
 
-                {/* Content with padding-top to not be hidden by the sticky header */}
-                <div className="pt-2">
-                  <HighlightedContent 
-                    content={activeTab === "cv" ? cvText : clText}
-                    onUpdate={activeTab === "cv" ? setCvText : setClText}
-                    keywords={data.keywords}
-                    activeTab={activeTab}
-                  />
-                </div>
+              {/* Scrollable Area */}
+              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar relative pt-12">
+                <HighlightedContent 
+                  content={activeTab === "cv" ? cvText : clText}
+                  onUpdate={activeTab === "cv" ? setCvText : setClText}
+                  keywords={data.keywords}
+                  activeTab={activeTab}
+                />
               </div>
               
               {/* Bottom Gradient Fade to indicate scrollable content */}
