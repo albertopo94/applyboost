@@ -40,36 +40,40 @@ export async function GET(request: Request) {
       }
     );
 
+    console.log(`[AUTH_CALLBACK] Exchanging code for session...`);
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (!error && data.user) {
+    if (error) {
+      console.error("[AUTH_CALLBACK] Exchange error:", error);
+      return NextResponse.redirect(`${publicOrigin}/auth/auth-code-error?error=${encodeURIComponent(error.message)}`);
+    }
+
+    if (data.user) {
+      console.log(`[AUTH_CALLBACK] Login successful for user: ${data.user.id}`);
       // SUCCESSFUL LOGIN — Now trigger the data merge
       const anonymousId = cookieStore.get("applyboost_anon_id")?.value;
       
       if (anonymousId) {
-        console.log(`[AUTH_CALLBACK] Merging data for anon_id: ${anonymousId} -> user_id: ${data.user.id}`);
+        console.log(`[AUTH_CALLBACK] Attempting merge: anon_id ${anonymousId} -> user_id ${data.user.id}`);
         
-        // Use the admin client (service role) to bypass RLS for merging if necessary,
-        // or just the current user if the RLS policy allows it.
-        // Given the migration schema, the service_role is safer for the merge RPC.
         const { error: mergeError } = await supabase.rpc('merge_anonymous_data', {
           anon_id: anonymousId,
           target_user_id: data.user.id
         });
 
         if (mergeError) {
-          console.error("[AUTH_CALLBACK] Merge error:", mergeError);
+          console.error("[AUTH_CALLBACK] Merge error (non-blocking):", mergeError);
         } else {
-          // Cleanup anonymous tracking cookie (optional but cleaner)
-          // We can keep it if we want to track the session history, but the DB record is gone.
-          // supabaseResponse.cookies.delete("applyboost_anon_id"); // Middleware/NextResponse needed for this
+          console.log("[AUTH_CALLBACK] Merge successful");
         }
       }
 
+      console.log(`[AUTH_CALLBACK] Redirecting to ${publicOrigin}${next}`);
       return NextResponse.redirect(`${publicOrigin}${next}`);
     }
   }
 
+  console.warn("[AUTH_CALLBACK] No code found in URL or user not found");
   // return the user to an error page with instructions
   return NextResponse.redirect(`${publicOrigin}/auth/auth-code-error`);
 }
