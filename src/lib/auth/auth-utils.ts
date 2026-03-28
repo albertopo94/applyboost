@@ -6,13 +6,31 @@ import { cookies, headers } from "next/headers";
  * Resolves the current identity from both user session and anonymous cookies.
  */
 export async function getIdentity(anonymousIdOverride?: string): Promise<{ user: User | null; userId?: string; anonymousId: string }> {
+  const headerStore = await headers();
+  const userIdFromHeader = headerStore.get("x-user-id");
+  const userEmailFromHeader = headerStore.get("x-user-email");
+  
+  // 1. Try to resolve from headers first (injected by middleware)
+  if (userIdFromHeader) {
+    const cookieStore = await cookies();
+    const anonymousIdFromCookie = cookieStore.get("applyboost_anon_id")?.value || "";
+    const anonymousIdFromHeader = headerStore.get("x-applyboost-anon-id") || "";
+    const anonymousId = anonymousIdOverride || anonymousIdFromHeader || anonymousIdFromCookie;
+
+    return {
+      user: { id: userIdFromHeader, email: userEmailFromHeader } as User,
+      userId: userIdFromHeader,
+      anonymousId,
+    };
+  }
+
+  // 2. Fallback to direct Supabase call if headers are missing
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const cookieStore = await cookies();
-  const headerStore = await headers();
   const anonymousIdFromCookie = cookieStore.get("applyboost_anon_id")?.value || "";
   const anonymousIdFromHeader = headerStore.get("x-applyboost-anon-id") || "";
   

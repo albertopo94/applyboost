@@ -45,13 +45,13 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    // 4. Get user session (refreshes if needed) with 8s timeout
+    // 4. Get user session (refreshes if needed) with 4s timeout
     const authPromise = supabase.auth.getUser();
     const timeoutPromise = new Promise<any>((_, reject) =>
-      setTimeout(() => reject(new Error("DB_AUTH_TIMEOUT")), 8000)
+      setTimeout(() => reject(new Error("DB_AUTH_TIMEOUT")), 4000)
     );
 
-    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Requesting session from Supabase (8s timeout)...`);
+    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Requesting session from Supabase (4s timeout)...`);
 
     const { data: { user } } = await Promise.race([
       authPromise,
@@ -62,7 +62,18 @@ export async function middleware(request: NextRequest) {
       console.log(`[MIDDLEWARE][${requestId}] Session resolved. User: ${user ? user.id : 'anonymous'}`);
     }
 
-    // 5. Access Control Logic
+    // INJECT: Pass user info to request headers for the next handler
+    if (user) {
+      requestHeaders.set("x-user-id", user.id);
+      if (user.email) requestHeaders.set("x-user-email", user.email);
+    }
+
+    // Re-create supabaseResponse with the updated headers
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
