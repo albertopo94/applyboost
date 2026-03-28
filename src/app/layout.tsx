@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "https://www.45.90.237.160.sslip.io/og-image.png",
+        url: "https://www.45.90.237.160.sslip.io/brand-card.svg",
         width: 1200,
         height: 630,
         alt: "ApplyBoost Identity",
