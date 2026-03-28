@@ -1,4 +1,4 @@
-export type JobSourceDomain = "linkedin" | "indeed" | "infojobs" | "generic" | "unknown";
+export type JobSourceDomain = "linkedin" | "indeed" | "infojobs" | "tecnoempleo" | "generic" | "unknown";
 
 export type JobExtractionStatus = "ok" | "blocked" | "unreadable" | "source_unavailable";
 

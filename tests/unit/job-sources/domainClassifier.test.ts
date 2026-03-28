@@ -19,6 +19,11 @@ describe("domainClassifier", () => {
     expect(classifyJobSourceDomain("https://www.infojobs.it/milano/puesto-de-trabajo/of-123")).toBe("infojobs");
   });
 
+  it("should classify Tecnoempleo URLs correctly", () => {
+    expect(classifyJobSourceDomain("https://www.tecnoempleo.com/desarrollador-react/rf-123")).toBe("tecnoempleo");
+    expect(classifyJobSourceDomain("https://tecnoempleo.com/rf-123")).toBe("tecnoempleo");
+  });
+
   it("should classify other URLs as generic", () => {
     expect(classifyJobSourceDomain("https://github.com/jobs/123")).toBe("generic");
     expect(classifyJobSourceDomain("https://google.com")).toBe("generic");
