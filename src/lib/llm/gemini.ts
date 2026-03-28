@@ -34,13 +34,22 @@ export class GeminiService implements AIService {
         },
       });
 
-      // Passing the signal for timeout support (SDK supports AbortSignal via RequestOptions)
-      const result = await model.generateContent(
-        { contents: [{ role: "user", parts: [{ text: prompt }] }] },
-        { signal }
-      );
+      // Wrap in a manual promise race for the timeout if signal is provided
+      const generationPromise = model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
 
-      const text = result.response.text();
+      const response = await (signal 
+        ? Promise.race([
+            generationPromise,
+            new Promise<never>((_, reject) => {
+              if (signal.aborted) reject(new Error("TimeoutError"));
+              signal.addEventListener("abort", () => reject(new Error("TimeoutError")));
+            })
+          ])
+        : generationPromise);
+
+      const text = response.response.text();
 
       if (!text) {
         throw new Error("Gemini returned empty response");
