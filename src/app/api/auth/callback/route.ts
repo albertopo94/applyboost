@@ -10,7 +10,7 @@ import { cookies } from "next/headers";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/editor";
+  const next = searchParams.get("next") ?? "/";
   
   // Use public origin to avoid Docker internal ID redirection issues
   const publicOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://www.45.90.237.160.sslip.io";
