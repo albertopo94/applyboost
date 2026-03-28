@@ -45,10 +45,11 @@ export function useEditor(data: GenerateResponse) {
 
   const handleLogin = async () => {
     if (!supabase) return;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/api/auth/callback",
+        redirectTo: `${siteUrl}/api/auth/callback`,
       },
     });
   };

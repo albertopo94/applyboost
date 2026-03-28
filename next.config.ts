@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
   },
   // Reduce parallelization to save RAM
   experimental: {
-    trustHostHeader: true,
     workerThreads: false,
     cpus: 1,
   },

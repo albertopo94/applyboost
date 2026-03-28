@@ -71,10 +71,11 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     if (!supabase || isRedirecting) return;
     setIsRedirecting(true);
     try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/api/auth/callback",
+          redirectTo: `${siteUrl}/api/auth/callback`,
         },
       });
     } catch (err) {
