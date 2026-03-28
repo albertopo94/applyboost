@@ -25,9 +25,59 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Checking session...`);
+    // 1. Prepare initial fallback response and headers
+    const requestHeaders = new Headers(request.headers);
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
 
-    // ... (resto del código igual hasta la llamada a getUser) ...
+    /**
+     * Helper to ensure all cookies (session refresh, anonymous ID, etc.)
+     * are carried over to any new response object (redirects, JSON errors).
+     * This is critical for Next.js 15 stability.
+     */
+    const withCookies = (res: NextResponse) => {
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        res.cookies.set(cookie.name, cookie.value);
+      });
+      return res;
+    };
+
+    // 2. Anonymous identity handling
+    let anonymousId = request.cookies.get("applyboost_anon_id")?.value;
+    if (!anonymousId) {
+      anonymousId = crypto.randomUUID();
+    }
+    
+    // Inject into request headers for the next handler
+    requestHeaders.set("x-applyboost-anon-id", anonymousId);
+    
+    // Re-create supabaseResponse with the updated headers
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+
+    // Ensure the anonymous cookie is persisted in the response
+    supabaseResponse.cookies.set("applyboost_anon_id", anonymousId, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: "lax",
+    });
+
+    // 3. Initialize Supabase client
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      console.warn("Supabase environment variables missing in middleware.");
+      return supabaseResponse;
+    }
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
