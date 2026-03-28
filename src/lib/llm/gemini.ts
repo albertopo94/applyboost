@@ -34,10 +34,11 @@ export class GeminiService implements AIService {
         },
       });
 
-      // Passing the signal for timeout support (SDK supports AbortSignal)
-      const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-      });
+      // Passing the signal for timeout support (SDK supports AbortSignal via RequestOptions)
+      const result = await model.generateContent(
+        { contents: [{ role: "user", parts: [{ text: prompt }] }] },
+        { signal }
+      );
 
       const text = result.response.text();
 

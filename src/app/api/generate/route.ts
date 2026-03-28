@@ -13,17 +13,18 @@ const ENABLE_JOB_SOURCE_ORCHESTRATOR = process.env.ENABLE_JOB_SOURCE_ORCHESTRATO
 
 export async function POST(req: Request) {
   const requestId = crypto.randomUUID();
+  console.log(`[API_GENERATE][${requestId}] INCOMING REQUEST: Checking FormData & Identity...`);
+
   try {
     const formData = await req.formData();
     const bodyAnonId = formData.get("anonymous_id") as string | null;
 
     // 1. Resolve Identity (Allow Anonymous for MVP)
-    const { user, userId, anonymousId } = await requireAuth({ 
-      allowAnonymous: true, 
-      anonymousId: bodyAnonId || undefined 
+    const { user, userId, anonymousId } = await requireAuth({
+      allowAnonymous: true,
+      anonymousId: bodyAnonId || undefined
     });
-    console.log(`[API_GENERATE][${requestId}] Request started for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}.`);
-    
+    console.log(`[API_GENERATE][${requestId}] Identity resolved for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}.`);    
     // Check for required environment variables
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey || serviceRoleKey === "your-service-role-key-here") {

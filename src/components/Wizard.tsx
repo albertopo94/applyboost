@@ -50,6 +50,8 @@ export default function Wizard({ onComplete }: WizardProps) {
     }
 
     setIsUploading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
 
     try {
       const formData = new FormData();
@@ -61,8 +63,10 @@ export default function Wizard({ onComplete }: WizardProps) {
       const res = await fetch("/api/generate", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       const data = await res.json();
 
       if (!res.ok) {
