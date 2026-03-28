@@ -8,9 +8,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface HeaderProps {
   step: "WIZARD" | "RESULT";
   setStep: (step: "WIZARD" | "RESULT") => void;
+  onOpenAuth: () => void;
 }
 
-export function Header({ step, setStep }: HeaderProps) {
+export function Header({ step, setStep, onOpenAuth }: HeaderProps) {
   const { t } = useLanguage();
 
   return (
@@ -36,7 +37,7 @@ export function Header({ step, setStep }: HeaderProps) {
             <LanguageSelector />
             <ThemeToggle />
           </div>
-          <UserMenu />
+          <UserMenu onOpenAuth={onOpenAuth} />
         </div>
       </div>
     </header>

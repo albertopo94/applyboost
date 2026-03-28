@@ -66,6 +66,8 @@
     "limit_title": "Limit reached",
     "limit_subtitle": "Sign up to continue optimizing",
     "login_to_continue": "Login to continue",
+    "auth_consent": "By continuing, you allow ApplyBoost to access your name, email, and profile picture to manage your identity and documents.",
+    "logging_in": "Connecting...",
     "missing_fields_title": "Missing data detected",
     "missing_fields_desc": "We've detected fields that require your attention: {fields}. You can complete them directly in the highlighted text.",
     "export": {

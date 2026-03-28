@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { QuotaBanner } from "@/components/layout/QuotaBanner";
 import SocialProofTicker from "@/components/SocialProofTicker";
 import { createClient } from "@/lib/db/supabase-browser";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 interface PlatformStats {
   page_views: number;
@@ -22,10 +23,12 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   const [step, setStep] = useState<"WIZARD" | "RESULT">("WIZARD");
   const [generationData, setGenerationData] = useState<any>(null);
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  
   const supabase = createClient();
 
   useEffect(() => {
-    // Build Guard: In SSR/Build environment, just exit
     if (typeof window === "undefined" || !supabase) {
       return;
     }
@@ -49,7 +52,22 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     };
   }, [supabase]);
 
-  // Calculate remaining uses based on generationData or default MVP limit (3)
+  const handleGoogleLogin = async () => {
+    if (!supabase || isRedirecting) return;
+    setIsRedirecting(true);
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/api/auth/callback",
+        },
+      });
+    } catch (err) {
+      console.error("Login error:", err);
+      setIsRedirecting(false);
+    }
+  };
+
   const remainingUses = generationData?.free_uses_remaining !== undefined 
     ? generationData.free_uses_remaining 
     : (3 - (generationData?.usage_count || 0));
@@ -58,7 +76,11 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900/40 dark:selection:text-blue-100">
       <div className="w-full max-w-6xl bg-white dark:bg-slate-900/40 shadow-sm dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800">
         
-        <Header step={step} setStep={setStep} />
+        <Header 
+          step={step} 
+          setStep={setStep} 
+          onOpenAuth={() => setShowAuthModal(true)} 
+        />
 
         {step === "RESULT" && isAnonymous && (
           <QuotaBanner 
@@ -67,7 +89,6 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           />
         )}
 
-        {/* Content Area */}
         <div className="p-6 sm:p-10 md:p-14">
           {step === "WIZARD" ? (
             <Wizard onComplete={(data: any) => {
@@ -80,6 +101,14 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           <SocialProofTicker initialStats={initialStats} />
         </div>
       </div>
+
+      {/* RENDERED OUTSIDE THE OVERFLOW-HIDDEN CONTAINER */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onConfirm={handleGoogleLogin}
+        isRedirecting={isRedirecting}
+      />
     </main>
   );
 }
