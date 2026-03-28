@@ -27,7 +27,9 @@ ALTER TABLE public.generations ADD COLUMN IF NOT EXISTS anonymous_id TEXT;
 CREATE INDEX IF NOT EXISTS idx_generations_anonymous_id ON public.generations (anonymous_id);
 
 -- 3. Implement merge_anonymous_data SQL function
--- Atomic reassign generations from anon to user and cleanup.
+-- Atomic reassign generations from anon to user.
+-- Quota persistence: We NO LONGER delete from anonymous_usage here
+-- so that if the user logs out, their anonymous usage is remembered.
 CREATE OR REPLACE FUNCTION public.merge_anonymous_data(anon_id TEXT, target_user_id UUID)
 RETURNS VOID AS $$
 BEGIN
@@ -35,11 +37,10 @@ BEGIN
   UPDATE public.generations 
   SET user_id = target_user_id, anonymous_id = NULL
   WHERE anonymous_id = anon_id;
-
-  -- Delete anon usage record after successful merge
-  DELETE FROM public.anonymous_usage WHERE anonymous_id = anon_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = public;
 
 -- 4. Configure RLS for anonymous_usage
 ALTER TABLE public.anonymous_usage ENABLE ROW LEVEL SECURITY;

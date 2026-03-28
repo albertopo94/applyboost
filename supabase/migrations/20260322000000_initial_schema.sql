@@ -132,10 +132,12 @@ ALTER TABLE generations     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cv_versions     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE generation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_exports    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_stats  ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "users_own_data"       ON users           FOR ALL USING (auth.uid() = id);
 CREATE POLICY "generations_own_data" ON generations     FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "exports_own_data"     ON user_exports    FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "stats_read_only"      ON platform_stats  FOR SELECT TO anon, authenticated USING (true);
 
 CREATE POLICY "cv_versions_own_data" ON cv_versions FOR ALL USING (
   auth.uid() = (SELECT user_id FROM generations WHERE id = generation_id)
