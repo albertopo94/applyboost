@@ -9,7 +9,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export function UserMenu() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const supabase = createClient();
   const { t } = useLanguage();
 
@@ -43,19 +42,13 @@ export function UserMenu() {
   }, [supabase]);
 
   const handleLogin = async () => {
-    if (!supabase || isLoggingIn) return;
-    setIsLoggingIn(true);
-    try {
-      await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin + "/api/auth/callback",
-        },
-      });
-    } catch (err) {
-      console.error("Login error:", err);
-      setIsLoggingIn(false);
-    }
+    if (!supabase) return;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/api/auth/callback",
+      },
+    });
   };
 
   const handleLogout = async () => {
@@ -71,41 +64,29 @@ export function UserMenu() {
     const loginText = t('editor.login_with_google');
     
     return (
-      <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={handleLogin}
-          disabled={isLoggingIn}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-200 dark:border-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoggingIn ? (
-            <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <LogIn className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-          )}
-          <span className="hidden sm:inline">
-            {isLoggingIn ? t('editor.logging_in') : (
-              loginText.split('Google').map((part, i, arr) => (
-                <span key={i}>
-                  {part}
-                  {i < arr.length - 1 && (
-                    <span className="inline-flex">
-                      <span style={{ color: '#4285F4' }}>G</span>
-                      <span style={{ color: '#EA4335' }}>o</span>
-                      <span style={{ color: '#FBBC05' }}>o</span>
-                      <span style={{ color: '#4285F4' }}>g</span>
-                      <span style={{ color: '#34A853' }}>l</span>
-                      <span style={{ color: '#EA4335' }}>e</span>
-                    </span>
-                  )}
+      <button
+        onClick={handleLogin}
+        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-200 dark:border-slate-800/50"
+      >
+        <LogIn className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+        <span className="hidden sm:inline">
+          {loginText.split('Google').map((part, i, arr) => (
+            <span key={i}>
+              {part}
+              {i < arr.length - 1 && (
+                <span className="inline-flex">
+                  <span style={{ color: '#4285F4' }}>G</span>
+                  <span style={{ color: '#EA4335' }}>o</span>
+                  <span style={{ color: '#FBBC05' }}>o</span>
+                  <span style={{ color: '#4285F4' }}>g</span>
+                  <span style={{ color: '#34A853' }}>l</span>
+                  <span style={{ color: '#EA4335' }}>e</span>
                 </span>
-              ))
-            )}
-          </span>
-        </button>
-        <p className="hidden md:block text-[9px] text-slate-400 dark:text-slate-500 text-center max-w-[220px] leading-tight opacity-80">
-          {t('editor.auth_consent')}
-        </p>
-      </div>
+              )}
+            </span>
+          ))}
+        </span>
+      </button>
     );
   }
 

@@ -66,8 +66,6 @@
     "limit_title": "Limite raggiunto",
     "limit_subtitle": "Registrati per continuare l'ottimizzazione",
     "login_to_continue": "Accedi per continuare",
-    "auth_consent": "Continuando, accetti i nostri termini e consenti l'accesso al tuo nome, email e foto del profilo.",
-    "logging_in": "Connessione...",
     "missing_fields_title": "Dati mancanti rilevati",
     "missing_fields_desc": "Abbiamo rilevato dei campi che richiedono la tua attenzione: {fields}. Puoi completarli direttamente nel testo evidenziato.",
     "export": {
