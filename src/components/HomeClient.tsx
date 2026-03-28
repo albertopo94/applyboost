@@ -25,8 +25,21 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [quotaUsage, setQuotaUsage] = useState(0);
   
   const supabase = createClient();
+
+  const fetchQuota = async () => {
+    try {
+      const res = await fetch("/api/auth/quota");
+      if (res.ok) {
+        const data = await res.json();
+        setQuotaUsage(data.usage_count || 0);
+      }
+    } catch (err) {
+      console.error("Error fetching quota:", err);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined" || !supabase) {
@@ -37,6 +50,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         setIsAnonymous(!user);
+        fetchQuota(); // Fetch initial quota
       } catch (err) {
         console.error("Auth check error:", err);
       }
@@ -45,6 +59,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAnonymous(!session?.user);
+      fetchQuota(); // Refresh quota on auth change
     });
 
     return () => {
@@ -68,9 +83,11 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     }
   };
 
+  // Remaining uses: either from generationData (just generated) or from the persistent quotaUsage
+  const currentUsage = generationData?.usage_count !== undefined ? generationData.usage_count : quotaUsage;
   const remainingUses = generationData?.free_uses_remaining !== undefined 
     ? generationData.free_uses_remaining 
-    : (3 - (generationData?.usage_count || 0));
+    : (3 - currentUsage);
   
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900/40 dark:selection:text-blue-100">
@@ -94,6 +111,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
             <Wizard onComplete={(data: any) => {
               setGenerationData(data);
               setStep("RESULT");
+              fetchQuota(); // Refresh quota after generation
             }} />
           ) : (
              <EditorPreview data={generationData} />
