@@ -8,10 +8,12 @@ import { cookies } from "next/headers";
  * Handles OAuth exchange and Anonymous-to-User data merge.
  */
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  // if "next" is in param, use it as the redirect address
   const next = searchParams.get("next") ?? "/editor";
+  
+  // Use public origin to avoid Docker internal ID redirection issues
+  const publicOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://www.45.90.237.160.sslip.io";
 
   if (code) {
     const cookieStore = await cookies();
@@ -64,10 +66,10 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${publicOrigin}${next}`);
     }
   }
 
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  return NextResponse.redirect(`${publicOrigin}/auth/auth-code-error`);
 }
