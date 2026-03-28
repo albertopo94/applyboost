@@ -22,7 +22,7 @@ RUN echo "NEXT_TELEMETRY_DISABLED=1" >> .env
 RUN echo "NEXT_IGNORE_TYPE_CHECKING=1" >> .env
 RUN echo "NEXT_IGNORE_ESLINT=1" >> .env
 
-ENV NODE_OPTIONS="--max-old-space-size=768"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN bun run build
 
 # Stage 3: Runner
