@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   productionBrowserSourceMaps: false,
+  images: {
+    unoptimized: true,
+  },
   // Reduce parallelization to save RAM
   experimental: {
     workerThreads: false,
