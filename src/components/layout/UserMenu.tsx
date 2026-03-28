@@ -74,8 +74,13 @@ export function UserMenu() {
             <span key={i}>
               {part}
               {i < arr.length - 1 && (
-                <span className="bg-gradient-to-r from-[#4285F4] via-[#EA4335] via-[#FBBC05] via-[#4285F4] via-[#34A853] to-[#EA4335] bg-clip-text text-transparent">
-                  Google
+                <span className="inline-flex">
+                  <span style={{ color: '#4285F4' }}>G</span>
+                  <span style={{ color: '#EA4335' }}>o</span>
+                  <span style={{ color: '#FBBC05' }}>o</span>
+                  <span style={{ color: '#4285F4' }}>g</span>
+                  <span style={{ color: '#34A853' }}>l</span>
+                  <span style={{ color: '#EA4335' }}>e</span>
                 </span>
               )}
             </span>
