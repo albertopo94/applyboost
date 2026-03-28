@@ -96,40 +96,46 @@ export async function middleware(request: NextRequest) {
     );
 
     // 4. Get user session (refreshes if needed) with 4s timeout
-    const authPromise = supabase.auth.getUser();
-    const timeoutPromise = new Promise<any>((_, reject) =>
-      setTimeout(() => reject(new Error("DB_AUTH_TIMEOUT")), 4000)
-    );
-
-    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Requesting session from Supabase (4s timeout)...`);
-
-    const { data: { user } } = await Promise.race([
-      authPromise,
-      timeoutPromise
-    ]);
-
-    if (pathname === "/api/generate") {
-      console.log(`[MIDDLEWARE][${requestId}] Session resolved. User: ${user ? user.id : 'anonymous'}`);
-    }
-
-    // INJECT: Pass user info to request headers for the next handler
-    if (user) {
-      requestHeaders.set("x-user-id", user.id);
-      if (user.email) requestHeaders.set("x-user-email", user.email);
-    }
-
-    // Re-create supabaseResponse with the updated headers
-    supabaseResponse = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+    // ONLY for protected routes or generation API to save resources
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
     const isProtectedApiRoute = PROTECTED_API_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
+
+    let user = null;
+    if (isProtectedRoute || isProtectedApiRoute || pathname === "/api/generate") {
+      const authPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise<any>((_, reject) =>
+        setTimeout(() => reject(new Error("DB_AUTH_TIMEOUT")), 4000)
+      );
+
+      if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Requesting session from Supabase (4s timeout)...`);
+
+      const { data: { user: foundUser } } = await Promise.race([
+        authPromise,
+        timeoutPromise
+      ]);
+      user = foundUser;
+
+      if (pathname === "/api/generate") {
+        console.log(`[MIDDLEWARE][${requestId}] Session resolved. User: ${user ? user.id : 'anonymous'}`);
+      }
+
+      // INJECT: Pass user info to request headers for the next handler
+      if (user) {
+        requestHeaders.set("x-user-id", user.id);
+        if (user.email) requestHeaders.set("x-user-email", user.email);
+      }
+
+      // Re-create supabaseResponse with the updated headers
+      supabaseResponse = NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    }
 
     // Special logic for /api/generate and /api/export (allow anonymous)
     if ((pathname === "/api/generate" || pathname.startsWith("/api/export")) && !user) {
