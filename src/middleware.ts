@@ -5,6 +5,13 @@ const PROTECTED_ROUTES = ["/dashboard", "/editor", "/settings", "/account"];
 const PROTECTED_API_ROUTES = ["/api/generate", "/api/cv", "/api/export"];
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const requestId = crypto.randomUUID().slice(0, 8);
+  
+  if (pathname === "/api/generate") {
+    console.log(`[MIDDLEWARE][${requestId}] Start processing /api/generate`);
+  }
+
   // Skip heavy logic during build time
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.next();
@@ -13,66 +20,15 @@ export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next();
 
   try {
-    const { pathname } = request.nextUrl;
-
-    // 0. Skip middleware for auth callback to prevent race conditions during OAuth exchange
+    // 0. Skip middleware for auth callback
     if (pathname === "/api/auth/callback") {
       return NextResponse.next();
     }
 
-    // 1. Prepare initial fallback response and headers
-    const requestHeaders = new Headers(request.headers);
-    supabaseResponse = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Checking session...`);
 
-    /**
-     * Helper to ensure all cookies (session refresh, anonymous ID, etc.)
-     * are carried over to any new response object (redirects, JSON errors).
-     * This is critical for Next.js 15 stability.
-     */
-    const withCookies = (res: NextResponse) => {
-      supabaseResponse.cookies.getAll().forEach((cookie) => {
-        res.cookies.set(cookie.name, cookie.value);
-      });
-      return res;
-    };
-
-    // 2. Anonymous identity handling
-    let anonymousId = request.cookies.get("applyboost_anon_id")?.value;
-    if (!anonymousId) {
-      anonymousId = crypto.randomUUID();
-    }
+    // ... (resto del código igual hasta la llamada a getUser) ...
     
-    // Inject into request headers for the next handler
-    requestHeaders.set("x-applyboost-anon-id", anonymousId);
-    
-    // Re-create supabaseResponse with the updated headers
-    supabaseResponse = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
-
-    // Ensure the anonymous cookie is persisted in the response
-    supabaseResponse.cookies.set("applyboost_anon_id", anonymousId, {
-      httpOnly: true,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      sameSite: "lax",
-    });
-
-    // 3. Initialize Supabase client
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      console.warn("Supabase environment variables missing in middleware.");
-      return supabaseResponse;
-    }
-
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -90,10 +46,13 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    // 4. Get user session (refreshes if needed)
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    if (pathname === "/api/generate") {
+      console.log(`[MIDDLEWARE][${requestId}] Session check done. User: ${user ? user.id : 'anonymous'}`);
+    }
 
     // 5. Access Control Logic
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
