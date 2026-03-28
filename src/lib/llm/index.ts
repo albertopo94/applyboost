@@ -57,9 +57,8 @@ export async function callLLM(prompt: string): Promise<LLMOutput> {
 
     try {
       console.log(`\n[LLM] >>> INTENTO ${attempts + 1}: Llamando a [${providerName.toUpperCase()}]...`);
-      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(30000));
+      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(20000));
       const result = parseAndValidate(rawOutput);
-
       if (result.success) {
         currentProviderIndex = (currentProviderIndex + 1) % providerOrder.length;
         console.log(`[LLM] <<< ✅ [${providerName.toUpperCase()}] respondió con éxito.`);
