@@ -37,6 +37,7 @@ export async function POST(req: Request) {
 
     const cvFile = formData.get("cvFile") as File | null;
     let cvText = formData.get("cvText") as string | null;
+    let usedKeyIndex: number | undefined = undefined;
     const jobUrl = formData.get("jobUrl") as string | null;
     const jobTextFromForm = formData.get("jobText") as string | null;
     let jobText = jobTextFromForm;
@@ -45,7 +46,9 @@ export async function POST(req: Request) {
     // 2. Parsing del CV (soporta Drop file o texto pegado)
     if (cvFile && cvFile.size > 0 && !cvText) {
       const buffer = Buffer.from(await cvFile.arrayBuffer());
-      cvText = await parseCV(buffer, cvFile.type, requestId);
+      const parseResult = await parseCV(buffer, cvFile.type, requestId);
+      cvText = parseResult.text;
+      usedKeyIndex = parseResult.usedKeyIndex !== -1 ? parseResult.usedKeyIndex : undefined;
     } else if (!cvText || cvText.trim().length === 0) {
       return NextResponse.json(
         { error: { code: "BAD_REQUEST", message: "Falta proporcionar tu CV", request_id: requestId } },
@@ -134,7 +137,8 @@ export async function POST(req: Request) {
       jobText,
       jobUrl,
       outputLanguage,
-      prompt
+      prompt,
+      excludeGeminiIndex: usedKeyIndex
     });
 
     // 5. Usage Tracking (Anonymous only)

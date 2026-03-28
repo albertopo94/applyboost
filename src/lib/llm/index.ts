@@ -39,7 +39,10 @@ function getProviderOrder(): string[] {
 /**
  * Call the LLM with round-robin fallback.
  */
-export async function callLLM(prompt: string): Promise<LLMOutput> {
+export async function callLLM(
+  prompt: string, 
+  excludeGeminiIndex?: number
+): Promise<LLMOutput> {
   const providerOrder = getProviderOrder();
 
   if (providerOrder.length === 0) {
@@ -57,7 +60,7 @@ export async function callLLM(prompt: string): Promise<LLMOutput> {
 
     try {
       console.log(`\n[LLM] >>> INTENTO ${attempts + 1}: Llamando a [${providerName.toUpperCase()}]...`);
-      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(30000));
+      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(30000), excludeGeminiIndex);
       const result = parseAndValidate(rawOutput);
 
       if (result.success) {
@@ -68,7 +71,7 @@ export async function callLLM(prompt: string): Promise<LLMOutput> {
 
       // JSON validation failed — retry once with same provider
       console.warn(`[LLM] ⚠️ [${providerName.toUpperCase()}]: JSON inválido, reintentando una vez...`);
-      const retryOutput = await provider.chat(prompt, AbortSignal.timeout(30000));
+      const retryOutput = await provider.chat(prompt, AbortSignal.timeout(30000), excludeGeminiIndex);
       const retryResult = parseAndValidate(retryOutput);
 
       if (retryResult.success) {

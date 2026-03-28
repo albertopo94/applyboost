@@ -18,8 +18,9 @@ export interface AIService {
    * Send a single prompt and get a text response.
    * Must throw LLMRateLimitError on 429 so the orchestrator can fallback.
    * Accepts an optional AbortSignal for timeouts.
+   * excludeGeminiIndex: skips a specific Gemini key index (useful after OCR).
    */
-  chat(prompt: string, signal?: AbortSignal): Promise<string>;
+  chat(prompt: string, signal?: AbortSignal, excludeGeminiIndex?: number): Promise<string>;
 }
 
 /**

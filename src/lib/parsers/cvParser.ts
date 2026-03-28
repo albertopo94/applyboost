@@ -14,13 +14,21 @@ function validateExtractedText(text: string): string {
 }
 
 /**
+ * Result of CV Parsing
+ */
+export interface CVParseResult {
+  text: string;
+  usedKeyIndex: number; // -1 if no Gemini key was used (e.g., DOCX or Plain Text)
+}
+
+/**
  * Extracts raw text from a PDF or Image using Gemini Vision (Ojo de Dios).
  */
 export async function parseWithGemini(
   buffer: Buffer, 
   mimeType: string, 
   requestId: string
-): Promise<string> {
+): Promise<CVParseResult> {
   try {
     const result = await GeminiVisionService.extractTextFromFile(buffer, mimeType, requestId);
     
@@ -35,10 +43,13 @@ export async function parseWithGemini(
       enrichedText += "\n\n### Visual Metadata (Interpreted Levels)\n" + result.visual_metadata.join("\n");
     }
 
-    return validateExtractedText(enrichedText);
+    return {
+      text: validateExtractedText(enrichedText),
+      usedKeyIndex: result.usedKeyIndex
+    };
   } catch (error: any) {
     // Propagate specific OCR errors
-    if (error.message.includes("OCR_FAILED_TIMEOUT")) {
+    if (error.message.includes("OCR_FAILED_TIMEOUT") || error.message.includes("OCR_FAILED_QUOTA")) {
       throw error;
     }
     
@@ -72,13 +83,14 @@ export async function parseCV(
   buffer: Buffer, 
   mimeType: string, 
   requestId: string = "unknown"
-): Promise<string> {
+): Promise<CVParseResult> {
   // 1. DOCX Path (Mammoth - Local, instant, free)
   if (
     mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     mimeType === "application/msword"
   ) {
-    return parseDocxToText(buffer);
+    const text = await parseDocxToText(buffer);
+    return { text, usedKeyIndex: -1 };
   }
 
   // 2. Multimodal Path (PDF, JPG, PNG via Gemini Vision)
@@ -93,7 +105,8 @@ export async function parseCV(
 
   // 3. Plain Text Path
   if (mimeType === "text/plain") {
-    return validateExtractedText(buffer.toString("utf-8"));
+    const text = validateExtractedText(buffer.toString("utf-8"));
+    return { text, usedKeyIndex: -1 };
   }
 
   throw new Error(`CV_PARSE_ERROR: Unsupported file format (${mimeType}).`);
