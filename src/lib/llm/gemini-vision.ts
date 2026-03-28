@@ -49,6 +49,12 @@ export class GeminiVisionService {
     
     // Iterate through available keys
     for (let i = 0; i < keys.length; i++) {
+      // Pre-emptive cooldown check
+      if (!GeminiKeyManager.isKeyAvailable(i)) {
+        console.log(`[GEMINI_COOLDOWN][${requestId}] Skipping Key #${i} (exhausted, waiting for reset).`);
+        continue;
+      }
+
       const apiKey = keys[i];
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -106,6 +112,7 @@ export class GeminiVisionService {
         // Handle Rate Limit (429) specifically by continuing the loop
         if (response.status === 429) {
           console.warn(`[OCR_RATE_LIMIT][${requestId}][Key #${i}] Rate Limit reached for this key.`);
+          GeminiKeyManager.markAsExhausted(i); // Mark for 60s cooldown
           continue; // Try next key
         }
 

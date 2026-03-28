@@ -3,9 +3,16 @@
  * 
  * Centralizes the management of multiple API keys for Gemini services.
  * Supports both GEMINI_API_KEYS (comma-separated list) and the legacy GEMINI_API_KEY.
+ * Now includes a stateful cooldown mechanism to skip rate-limited keys.
  */
 export class GeminiKeyManager {
   private static keys: string[] = [];
+  
+  /** 
+   * In-memory map to store cooldown expiration timestamps (ms) for each key index.
+   * key: index, value: timestamp (Date.now() + duration)
+   */
+  private static cooldowns: Map<number, number> = new Map();
 
   /**
    * Returns all available Gemini API keys.
@@ -50,5 +57,32 @@ export class GeminiKeyManager {
    */
   static getKeyCount(): number {
     return this.getKeys().length;
+  }
+
+  /**
+   * Marks a specific key as exhausted by setting a cooldown period.
+   * @param index The index of the key in the array.
+   * @param durationMs How long the cooldown should last (default 60s).
+   */
+  static markAsExhausted(index: number, durationMs: number = 60000): void {
+    const expiration = Date.now() + durationMs;
+    this.cooldowns.set(index, expiration);
+  }
+
+  /**
+   * Checks if a key is available (not in cooldown).
+   */
+  static isKeyAvailable(index: number): boolean {
+    const expiration = this.cooldowns.get(index);
+    if (!expiration) return true;
+
+    const now = Date.now();
+    if (now >= expiration) {
+      // Cooldown expired, clean up and return true
+      this.cooldowns.delete(index);
+      return true;
+    }
+
+    return false;
   }
 }

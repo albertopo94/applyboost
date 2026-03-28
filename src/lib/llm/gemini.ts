@@ -25,7 +25,13 @@ export class GeminiService implements AIService {
 
     // Internal rotation loop
     for (let i = 0; i < keys.length; i++) {
-      // Logic: skip the key if it matches the excluded index
+      // 1. Pre-emptive cooldown check (Global)
+      if (!GeminiKeyManager.isKeyAvailable(i)) {
+        console.log(`[GEMINI_COOLDOWN] Skipping Key #${i} (exhausted, waiting for reset).`);
+        continue;
+      }
+
+      // 2. Logic: skip the key if it matches the excluded index (Per-request)
       if (excludeGeminiIndex !== undefined && i === excludeGeminiIndex) {
         if (keys.length > 1) {
           console.log(`[GEMINI_EXCLUSION] Skipping Key #${i} (used by OCR).`);
@@ -81,6 +87,7 @@ export class GeminiService implements AIService {
         // Handle Rate Limit (429) specifically by continuing the loop
         if (error?.status === 429 || error?.message?.includes("429")) {
           console.warn(`[GEMINI_RATE_LIMIT] Key #${i} exhausted. Rotating...`);
+          GeminiKeyManager.markAsExhausted(i); // Mark for 60s cooldown
           continue; 
         }
         
