@@ -50,30 +50,33 @@ export async function GET(request: Request) {
 
     if (data.user) {
       console.log(`[AUTH_CALLBACK] Login successful for user: ${data.user.id}`);
-      // SUCCESSFUL LOGIN — Now trigger the data merge
-      const anonymousId = cookieStore.get("applyboost_anon_id")?.value;
       
+      const anonymousId = cookieStore.get("applyboost_anon_id")?.value;
+      const redirectUrl = new URL(next, publicOrigin).toString();
+
       if (anonymousId) {
         console.log(`[AUTH_CALLBACK] Attempting merge: anon_id ${anonymousId} -> user_id ${data.user.id}`);
         
-        const { error: mergeError } = await supabase.rpc('merge_anonymous_data', {
+        // We run this and log errors, but we DON'T wait for it to finish if it's taking too long
+        // or let it block the user's entry.
+        supabase.rpc('merge_anonymous_data', {
           anon_id: anonymousId,
           target_user_id: data.user.id
+        }).then(({ error: mergeError }) => {
+          if (mergeError) {
+            console.error("[AUTH_CALLBACK] Deferred merge error:", mergeError.message);
+          } else {
+            console.log("[AUTH_CALLBACK] Deferred merge successful");
+          }
         });
-
-        if (mergeError) {
-          console.error("[AUTH_CALLBACK] Merge error (non-blocking):", mergeError);
-        } else {
-          console.log("[AUTH_CALLBACK] Merge successful");
-        }
       }
 
-      console.log(`[AUTH_CALLBACK] Redirecting to ${publicOrigin}${next}`);
-      return NextResponse.redirect(`${publicOrigin}${next}`);
+      console.log(`[AUTH_CALLBACK] Redirecting to: ${redirectUrl}`);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
+  const errorUrl = new URL("/auth/auth-code-error", publicOrigin).toString();
   console.warn("[AUTH_CALLBACK] No code found in URL or user not found");
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${publicOrigin}/auth/auth-code-error`);
+  return NextResponse.redirect(errorUrl);
 }
