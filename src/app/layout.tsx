@@ -19,6 +19,19 @@ export const metadata: Metadata = {
   title: "ApplyBoost — Optimiza tu CV con IA",
   description:
     "Optimiza tu CV y genera cover letters personalizadas para cada oferta en segundos. Score ATS, edición inline y exportación en PDF pixel-perfect.",
+  openGraph: {
+    title: "ApplyBoost — Multiplica tus entrevistas",
+    description: "Obtén un CV y carta de presentación a medida en segundos — optimizados para superar los filtros (ATS).",
+    url: "https://www.45.90.237.160.sslip.io",
+    siteName: "ApplyBoost",
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ApplyBoost — Optimiza tu CV con IA",
+    description: "Multiplica tus posibilidades de éxito con CVs optimizados por IA.",
+  },
 };
 
 export default function RootLayout({
