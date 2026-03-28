@@ -15,6 +15,11 @@ export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
 
+    // 0. Skip middleware for auth callback to prevent race conditions during OAuth exchange
+    if (pathname === "/api/auth/callback") {
+      return NextResponse.next();
+    }
+
     // 1. Prepare initial fallback response and headers
     const requestHeaders = new Headers(request.headers);
     supabaseResponse = NextResponse.next({
