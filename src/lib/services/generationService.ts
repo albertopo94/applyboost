@@ -46,8 +46,8 @@ export class GenerationService {
     
     const faltaDatoMsg = hasMissingData ? ["Posible falta de información detectada"] : [];
 
-    // 3. Database Persistence
-    const supabase = await createClient();
+    // 3. Database Persistence - Use Admin Client to bypass RLS for anonymous/new users
+    const supabase = createAdminClient();
     
     const { data: genData, error: dbError } = await supabase
       .from("generations")
