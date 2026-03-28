@@ -47,8 +47,9 @@ export class GenerationService {
     const faltaDatoMsg = hasMissingData ? ["Posible falta de información detectada"] : [];
 
     // 3. Database Persistence - Use Admin Client to bypass RLS for anonymous/new users
+    console.log(`[GenerationService] Step 3: Saving to 'generations' table...`);
     const supabase = createAdminClient();
-    
+
     const { data: genData, error: dbError } = await supabase
       .from("generations")
       .insert({
@@ -64,8 +65,12 @@ export class GenerationService {
       .select('id')
       .single();
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error(`[GenerationService] Error in 'generations' insert:`, dbError);
+      throw dbError;
+    }
     const genId = genData?.id;
+    console.log(`[GenerationService] 'generations' success! ID: ${genId}. Now saving to 'cv_versions'...`);
 
     const { error: cvError } = await supabase
       .from("cv_versions")
@@ -83,8 +88,11 @@ export class GenerationService {
         falta_dato_fields: faltaDatoMsg
       });
 
-    if (cvError) throw cvError;
-
+    if (cvError) {
+      console.error(`[GenerationService] Error in 'cv_versions' insert:`, cvError);
+      throw cvError;
+    }
+    console.log(`[GenerationService] 'cv_versions' success!`);
     // Logging & Stats
     await supabase.from("generation_logs").insert({
       generation_id: genId,

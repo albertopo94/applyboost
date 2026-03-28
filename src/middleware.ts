@@ -28,7 +28,6 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Checking session...`);
 
     // ... (resto del código igual hasta la llamada a getUser) ...
-    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -46,12 +45,21 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // 4. Get user session (refreshes if needed) with 8s timeout
+    const authPromise = supabase.auth.getUser();
+    const timeoutPromise = new Promise<any>((_, reject) =>
+      setTimeout(() => reject(new Error("DB_AUTH_TIMEOUT")), 8000)
+    );
+
+    if (pathname === "/api/generate") console.log(`[MIDDLEWARE][${requestId}] Requesting session from Supabase (8s timeout)...`);
+
+    const { data: { user } } = await Promise.race([
+      authPromise,
+      timeoutPromise
+    ]);
 
     if (pathname === "/api/generate") {
-      console.log(`[MIDDLEWARE][${requestId}] Session check done. User: ${user ? user.id : 'anonymous'}`);
+      console.log(`[MIDDLEWARE][${requestId}] Session resolved. User: ${user ? user.id : 'anonymous'}`);
     }
 
     // 5. Access Control Logic
