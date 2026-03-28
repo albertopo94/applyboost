@@ -61,13 +61,26 @@ export function UserMenu() {
   if (loading) return <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
 
   if (!user) {
+    const loginText = t('editor.login_with_google');
+    
     return (
       <button
         onClick={handleLogin}
-        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800/30"
+        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors border border-slate-200 dark:border-slate-800/50"
       >
-        <LogIn className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">{t('editor.login_with_google')}</span>
+        <LogIn className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+        <span className="hidden sm:inline">
+          {loginText.split('Google').map((part, i, arr) => (
+            <span key={i}>
+              {part}
+              {i < arr.length - 1 && (
+                <span className="bg-gradient-to-r from-[#4285F4] via-[#EA4335] via-[#FBBC05] to-[#34A853] bg-clip-text text-transparent">
+                  Google
+                </span>
+              )}
+            </span>
+          ))}
+        </span>
       </button>
     );
   }
