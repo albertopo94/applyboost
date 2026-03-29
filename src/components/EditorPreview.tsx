@@ -6,6 +6,8 @@ import { TabSwitcher } from "./editor/TabSwitcher";
 import { AuditSidebar } from "./editor/AuditSidebar";
 import { HighlightedContent } from "./editor/HighlightedContent";
 import { ExportPanel } from "./editor/ExportPanel";
+import { Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 interface DiffItem {
   cambio: string;
@@ -51,6 +53,15 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
     t
   } = useEditor(data);
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const textToCopy = activeTab === "cv" ? cvText : clText;
+    navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/20">
       <main className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
@@ -81,8 +92,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-full">
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
-              <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between pointer-events-none select-none rounded-t-3xl">
-                <div className="flex items-center gap-2.5">
+              <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between rounded-t-3xl">
+                <div className="flex items-center gap-2.5 pointer-events-none select-none">
                   <div className="relative flex items-center justify-center">
                     <div className="absolute w-3.5 h-3.5 rounded-full bg-blue-500/20 animate-ping" />
                     <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.7)]" />
@@ -92,8 +103,17 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                   </span>
                 </div>
                 
-                {/* Subtle decorative element for mobile hint */}
-                <div className="w-10 h-1 rounded-full bg-slate-200/40 dark:bg-slate-800/40 sm:hidden" />
+                <button
+                  onClick={handleCopy}
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group relative"
+                  title="Copiar contenido"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-slate-400 group-hover:text-blue-600 dark:text-slate-500 dark:group-hover:text-blue-400" />
+                  )}
+                </button>
               </div>
 
               {/* Scrollable Area */}
