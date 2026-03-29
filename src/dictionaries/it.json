@@ -87,8 +87,8 @@
     "changes_title": "Cosa abbiamo cambiato?",
     "changes_subtitle": "Miglioramenti mirati al successo dell'ATS.",
     "tabs": {
-      "cv": "Curriculum Vitae",
-      "cover_letter": "Lettera di Presentazione"
+      "cv": "Curriculum",
+      "cover_letter": "Lettera"
     },
     "sidebar": {
       "explanation": "Analisi dell'Esperto",
