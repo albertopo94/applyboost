@@ -24,9 +24,12 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application with strict memory limits
-ENV NODE_OPTIONS="--max-old-space-size=1536"
+# Build the application with increased memory limit
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 RUN bun run build
+
+# Verify build output
+RUN ls -la .next && ls -la .next/standalone || (echo "Build FAILED: Standalone not found" && exit 1)
 
 # Stage 3: Runner (Production Environment)
 FROM base AS runner

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  // Disable type checking and linting during build to save RAM on the VPS
+  // Disable type checking and linting during build to save RAM
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -13,16 +13,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  // Extreme RAM savings for small VPS - Official Next.js 15 optimizations
+  // Memory optimizations for VPS (but not too restrictive)
   experimental: {
-    workerThreads: false,
-    cpus: 1,
     webpackMemoryOptimizations: true,
-  },
-  // Disable webpack cache to prevent hanging on low-resource environments
-  webpack: (config) => {
-    config.cache = false;
-    return config;
   },
   // Security headers (SDD §9.2)
   async headers() {
