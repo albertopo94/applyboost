@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
     cpus: 1,
     webpackMemoryOptimizations: true,
   },
+  // Optimization for low-RAM environments
+  webpack: (config) => {
+    config.cache = false;
+    return config;
+  },
   // Security headers (SDD §9.2)
   async headers() {
     return [
