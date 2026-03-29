@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
     workerThreads: false,
     cpus: 1,
   },
+  // Optimization for low-RAM environments
+  webpack: (config) => {
+    // Disable webpack cache to avoid "Serializing big strings" hang
+    config.cache = false;
+    return config;
+  },
   // Security headers (SDD §9.2)
   async headers() {
     return [
