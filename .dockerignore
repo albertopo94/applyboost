@@ -16,3 +16,13 @@ supabase/.branches
 scripts/
 tests/
 .vscode
+OCR_COMPARATIVE_ANALYSIS/
+*.pdf
+*.jpg
+*.png
+*.docx
+_tmp_init/
+.playwright-mcp/
+.windsurf/
+.atl/
+
