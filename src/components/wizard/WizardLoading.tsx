@@ -10,10 +10,17 @@ function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-export default function WizardLoading() {
+interface WizardLoadingProps {
+  currentStep?: number;
+}
+
+export default function WizardLoading({ currentStep = 0 }: WizardLoadingProps) {
   const { t } = useLanguage();
   const spinners = t("spinners") as string[];
   const [claimIndex, setClaimIndex] = useState(0);
+
+  const TOTAL_STEPS = 5;
+  const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -32,6 +39,22 @@ export default function WizardLoading() {
       <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-50 tracking-tight mb-3">
         {t("wizard.optimizing")}
       </h3>
+
+      {/* Progress Bar and Fraction */}
+      <div className="w-full max-w-xs mb-8 space-y-2.5">
+        <div className="flex justify-between items-center text-[10px] font-black text-blue-600/80 dark:text-blue-400/80 uppercase tracking-[0.2em] antialiased">
+          <span>Proceso en curso</span>
+          <span className="bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-800/50">
+            {currentStep} de {TOTAL_STEPS} superado
+          </span>
+        </div>
+        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-gray-100/50 dark:border-slate-800/50">
+          <div 
+            className="h-full bg-blue-600 dark:bg-blue-500 transition-all duration-1000 ease-out rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+      </div>
       
       <div className="h-6 relative w-full overflow-hidden flex justify-center">
         {spinners.map((claim, idx) => (
