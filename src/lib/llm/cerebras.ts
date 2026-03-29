@@ -1,10 +1,8 @@
 import type { AIService } from "./types";
-import { LLMRateLimitError } from "./types";
+import { LLMRateLimitError, LLMProviderError } from "./types";
 
 /**
  * Cerebras LLM service.
- * API: https://cloud.cerebras.ai/docs
- * Compatible with OpenAI chat completions format.
  */
 export class CerebrasService implements AIService {
   readonly name = "cerebras";
@@ -19,12 +17,11 @@ export class CerebrasService implements AIService {
 
   async chat(prompt: string, signal?: AbortSignal): Promise<string> {
     if (!this.apiKey) {
-      throw new Error("CEREBRAS_API_KEY is not configured");
+      throw new LLMProviderError(this.name, "CEREBRAS_API_KEY is not configured");
     }
 
-    const res = await fetch(
-      "https://api.cerebras.ai/v1/chat/completions",
-      {
+    try {
+      const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
@@ -37,19 +34,29 @@ export class CerebrasService implements AIService {
           max_completion_tokens: 4096,
           top_p: 1,
         }),
-        signal, // Pass the AbortSignal
-      },
-    );
+        signal,
+      });
 
-    if (res.status === 429) {
-      throw new LLMRateLimitError(this.name);
+      if (res.status === 429 || res.status === 503) {
+        throw new LLMRateLimitError(this.name);
+      }
+
+      if (!res.ok) {
+        throw new LLMProviderError(this.name, `Cerebras API error: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      
+      if (!content) throw new LLMProviderError(this.name, "Empty response from Cerebras");
+      
+      return content;
+    } catch (error: any) {
+      if (error instanceof LLMRateLimitError || error instanceof LLMProviderError) throw error;
+      if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+        throw new LLMProviderError(this.name, "Timeout or Aborted", error);
+      }
+      throw new LLMProviderError(this.name, error.message, error);
     }
-
-    if (!res.ok) {
-      throw new Error(`Cerebras API error: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    return data.choices[0].message.content;
   }
 }

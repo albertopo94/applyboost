@@ -7,30 +7,44 @@ import { z } from "zod";
 
 /**
  * Universal interface that every LLM provider must implement.
- * Pattern: each provider is a service with a name and a chat method.
- * Adding a new provider = implement this interface + add to .env LLM_PROVIDER_ORDER.
  */
 export interface AIService {
-  /** Provider display name (e.g. "groq", "cerebras", "gemini") */
   readonly name: string;
-
-  /**
-   * Send a single prompt and get a text response.
-   * Must throw LLMRateLimitError on 429 so the orchestrator can fallback.
-   * Accepts an optional AbortSignal for timeouts.
-   * excludeGeminiIndex: skips a specific Gemini key index (useful after OCR).
-   */
   chat(prompt: string, signal?: AbortSignal, excludeGeminiIndex?: number): Promise<string>;
 }
 
+// ============================================================
+// Error Hierarchy — SDD §Design
+// Standardized errors for resilience and fallback.
+// ============================================================
+
 /**
- * Thrown when a provider returns HTTP 429 (quota exhausted).
- * The round-robin orchestrator catches this and tries the next provider.
+ * Base class for all LLM-related errors.
  */
-export class LLMRateLimitError extends Error {
-  constructor(provider: string) {
-    super(`Rate limit hit on provider: ${provider}`);
-    this.name = "LLMRateLimitError";
+export abstract class LLMBaseError extends Error {
+  constructor(public readonly provider: string, message: string, public readonly originalError?: any) {
+    super(`[${provider.toUpperCase()}] ${message}`);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Thrown when a provider returns HTTP 429 (quota exhausted) or 503 (server overloaded).
+ * Trigger for round-robin fallback.
+ */
+export class LLMRateLimitError extends LLMBaseError {
+  constructor(provider: string, message = "Rate limit hit or provider overloaded") {
+    super(provider, message);
+  }
+}
+
+/**
+ * Thrown when an LLM provider times out (e.g., 55s limit).
+ * Trigger for round-robin fallback.
+ */
+export class LLMTimeoutError extends LLMBaseError {
+  constructor(provider: string, message = "Provider timed out") {
+    super(provider, message);
   }
 }
 
@@ -38,16 +52,33 @@ export class LLMRateLimitError extends Error {
  * Thrown when an LLM returns a response that can't be parsed as valid JSON
  * or doesn't match the expected schema after retries.
  */
-export class LLMOutputInvalidError extends Error {
+export class LLMInvalidResponseError extends LLMBaseError {
+  constructor(provider: string, message: string, originalError?: any) {
+    super(provider, message, originalError);
+  }
+}
+
+/**
+ * Thrown for unhandled or unexpected provider errors (e.g., auth, network failure).
+ */
+export class LLMProviderError extends LLMBaseError {
+  constructor(provider: string, message: string, originalError?: any) {
+    super(provider, message, originalError);
+  }
+}
+
+/**
+ * Backward compatibility: Old error name used in orchestrator.
+ * TODO: Migrate all references to LLMInvalidResponseError and remove.
+ */
+export class LLMOutputInvalidError extends LLMInvalidResponseError {
   constructor(message: string) {
-    super(message);
-    this.name = "LLMOutputInvalidError";
+    super("unknown", message);
   }
 }
 
 // ============================================================
 // LLM Output Schema (Zod) — SDD §7.2
-// Validates the JSON returned by the LLM before using it.
 // ============================================================
 
 export const DiffItemSchema = z.object({
@@ -69,7 +100,6 @@ export type DiffItem = z.infer<typeof DiffItemSchema>;
 
 // ============================================================
 // Generate Response — returned to the frontend
-// Source: SDD §8.1
 // ============================================================
 
 export interface GenerateResponse {
@@ -98,7 +128,6 @@ export interface APIErrorResponse {
 
 // ============================================================
 // CV Data Object — structured CV for the Document Engine
-// Source: SDD §10 DTOs
 // ============================================================
 
 export interface CVDataObject {
@@ -128,5 +157,5 @@ export interface CVDataObject {
     description: string;
     url?: string;
   }[];
-  raw_text?: string; // For sections the parser can't infer
+  raw_text?: string;
 }

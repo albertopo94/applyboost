@@ -1,10 +1,9 @@
 import type { AIService } from "./types";
-import { LLMRateLimitError } from "./types";
+import { LLMRateLimitError, LLMProviderError } from "./types";
 
 /**
  * Groq LLM service.
  * API: https://console.groq.com/docs/api
- * Compatible with OpenAI chat completions format.
  */
 export class GroqService implements AIService {
   readonly name = "groq";
@@ -19,34 +18,46 @@ export class GroqService implements AIService {
 
   async chat(prompt: string, signal?: AbortSignal): Promise<string> {
     if (!this.apiKey) {
-      throw new Error("GROQ_API_KEY is not configured");
+      throw new LLMProviderError(this.name, "GROQ_API_KEY is not configured");
     }
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.3,
-        max_tokens: 4096,
-        response_format: { type: "json_object" },
-      }),
-      signal, // Pass the AbortSignal
-    });
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          max_tokens: 4096,
+          response_format: { type: "json_object" },
+        }),
+        signal,
+      });
 
-    if (res.status === 429) {
-      throw new LLMRateLimitError(this.name);
+      if (res.status === 429 || res.status === 503) {
+        throw new LLMRateLimitError(this.name);
+      }
+
+      if (!res.ok) {
+        throw new LLMProviderError(this.name, `Groq API error: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      
+      if (!content) throw new LLMProviderError(this.name, "Empty response from Groq");
+      
+      return content;
+    } catch (error: any) {
+      if (error instanceof LLMRateLimitError || error instanceof LLMProviderError) throw error;
+      if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+        throw new LLMProviderError(this.name, "Timeout or Aborted", error);
+      }
+      throw new LLMProviderError(this.name, error.message, error);
     }
-
-    if (!res.ok) {
-      throw new Error(`Groq API error: ${res.status} ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    return data.choices[0].message.content;
   }
 }

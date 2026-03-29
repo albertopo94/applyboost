@@ -2,10 +2,12 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Next.js 15 (App Router), Bun, TypeScript, Supabase, Tailwind.
-  Architecture: App Router, Service Layer (src/lib/services), API Routes.
-  Testing: Playwright (E2E), Jest/Vitest (Unit).
+  Tech stack: Next.js 15 (App Router), Bun, TypeScript, Supabase, Tailwind v4.
+  Architecture: Service Layer (src/lib/llm, src/lib/services), API Routes.
+  Testing: Bun Test (Unit), Playwright (E2E).
   Style: ESLint, Prettier, PostCSS.
+
+strict_tdd: true
 
 rules:
   proposal:
