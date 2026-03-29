@@ -3,32 +3,30 @@ import {
   LLMRateLimitError,
   LLMTimeoutError,
   LLMInvalidResponseError,
-  LLMProviderError,
 } from "./types";
 import { GroqService } from "./groq";
 import { CerebrasService } from "./cerebras";
 import { GeminiService } from "./gemini";
-import { OpenRouterService } from "./openrouter";
 import { parseAndValidate } from "./utils/jsonUtils";
 
 // ============================================================
-// LLM Round-Robin Orchestrator (Stateless)
-// Pattern: Circular randomized fallback.
+// LLM Priority Orchestrator (Stateless)
+// Pattern: Strict priority fallback.
 // ============================================================
 
 /** Registry of all available provider constructors */
 const PROVIDER_REGISTRY: Record<string, () => AIService> = {
+  gemini: () => new GeminiService(),
   groq: () => new GroqService(),
   cerebras: () => new CerebrasService(),
-  gemini: () => new GeminiService(),
-  openrouter: () => new OpenRouterService(),
 };
 
 /**
  * Get the ordered list of provider names from .env.
+ * Default: gemini, groq, cerebras
  */
 function getProviderOrder(): string[] {
-  const order = process.env.LLM_PROVIDER_ORDER ?? "groq,cerebras,gemini,openrouter";
+  const order = process.env.LLM_PROVIDER_ORDER ?? "gemini,groq,cerebras";
   return order
     .split(",")
     .map((p) => p.trim().toLowerCase())
@@ -36,7 +34,8 @@ function getProviderOrder(): string[] {
 }
 
 /**
- * Call the LLM with circular randomized fallback (stateless).
+ * Call the LLM with strict priority fallback.
+ * Always tries the first provider in LLM_PROVIDER_ORDER first.
  */
 export async function callLLM(
   prompt: string, 
@@ -52,19 +51,16 @@ export async function callLLM(
     );
   }
 
-  // Statistical load balancing: start from a random provider each time
-  const startIndex = Math.floor(Math.random() * providerOrder.length);
   const errors: string[] = [];
 
+  // Use strict order (no randomization as per business logic requirement)
   for (let i = 0; i < providerOrder.length; i++) {
-    const currentIdx = (startIndex + i) % providerOrder.length;
-    const providerName = providerOrder[currentIdx];
+    const providerName = providerOrder[i];
     const provider = PROVIDER_REGISTRY[providerName]();
 
     try {
       console.log(`\n[LLM] >>> INTENTO ${i + 1}: [${providerName.toUpperCase()}]...`);
       
-      // Internal retry loop for JSON validation (Max 2 attempts per provider)
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
           const rawOutput = await provider.chat(prompt, AbortSignal.timeout(55000), excludeGeminiIndex);
@@ -80,15 +76,12 @@ export async function callLLM(
             throw new LLMInvalidResponseError(providerName, "JSON validation failed after 2 attempts");
           }
         } catch (innerError: any) {
-          // If it's a RateLimit or Timeout, don't retry same provider, move to next
           const isFallbackable = innerError instanceof LLMRateLimitError || 
                                 innerError instanceof LLMTimeoutError ||
                                 innerError?.name === "TimeoutError" || 
                                 innerError?.name === "AbortError";
           
-          if (isFallbackable && attempt === 1) {
-             throw innerError; // Bubbles up to outer catch for fallback
-          }
+          if (isFallbackable && attempt === 1) throw innerError;
           if (attempt === 2) throw innerError;
         }
       }
@@ -106,8 +99,6 @@ export async function callLLM(
         console.error(`[LLM] 💥 [${providerTag}]: Error inesperado: ${msg}`);
         errors.push(`${providerName}: ${msg}`);
       }
-      
-      // If we exhausted all providers, the loop will finish and we throw below
     }
   }
 
@@ -117,8 +108,5 @@ export async function callLLM(
   );
 }
 
-/**
- * Re-export types for convenience.
- */
 export { LLMInvalidResponseError, LLMRateLimitError, LLMTimeoutError, LLMProviderError } from "./types";
 export type { AIService, LLMOutput } from "./types";
