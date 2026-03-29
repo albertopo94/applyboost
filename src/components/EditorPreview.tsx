@@ -65,10 +65,10 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/20">
       <main className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
           {/* Editor Area */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-6 flex flex-col">
             
             <PremiumScoreHeader 
               original={data.score_original} 
@@ -89,7 +89,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             </div>
 
             {/* Main Editor Container */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-full">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group flex-grow flex flex-col">
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
               <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between rounded-t-3xl">
@@ -105,7 +105,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 
                 <button
                   onClick={handleCopy}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group relative"
+                  className="p-2 pointer-events-auto hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group relative"
                   title="Copiar contenido"
                 >
                   {copied ? (
@@ -116,8 +116,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 </button>
               </div>
 
-              {/* Scrollable Area */}
-              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar relative pt-12">
+              {/* Scrollable Area - Content now defines height */}
+              <div className="flex-grow relative pt-12">
                 <HighlightedContent 
                   content={activeTab === "cv" ? cvText : clText}
                   onUpdate={activeTab === "cv" ? setCvText : setClText}
@@ -125,27 +125,26 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                   activeTab={activeTab}
                 />
               </div>
-              
-              {/* Bottom Gradient Fade to indicate scrollable content */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
             </div>
           </div>
 
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
-            <ExportPanel 
-              templateMode={templateMode}
-              setTemplateMode={setTemplateMode}
-              handleDownload={handleDownload}
-              downloadingType={downloadingType}
-              hasCL={hasCL}
-            />
-            
-            <AuditSidebar 
-              explanation={data.cover_letter_explanation}
-              diff={data.diff}
-              activeTab={activeTab}
-            />
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="lg:sticky lg:top-8 space-y-6">
+              <ExportPanel 
+                templateMode={templateMode}
+                setTemplateMode={setTemplateMode}
+                handleDownload={handleDownload}
+                downloadingType={downloadingType}
+                hasCL={hasCL}
+              />
+              
+              <AuditSidebar 
+                explanation={data.cover_letter_explanation}
+                diff={data.diff}
+                activeTab={activeTab}
+              />
+            </div>
           </div>
         </div>
       </main>
