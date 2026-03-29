@@ -27,7 +27,8 @@
     "error_cv": "We need your CV (PDF or pasted text).",
     "error_job": "Add the job URL or paste the text directly.",
     "error_scraper_blocked": "We couldn't read the job details from this link. Please paste the description manually below.",
-    "optimizing": "Optimizing CV..."
+    "optimizing": "Optimizing CV...",
+    "language_hint": "The result will be generated in the same language as the job offer."
   },
   "spinners": [
     "Your CV, optimized for every job",

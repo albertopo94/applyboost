@@ -27,7 +27,8 @@
     "error_cv": "Abbiamo bisogno del tuo CV (PDF o testo incollato).",
     "error_job": "Aggiungi l'URL dell'offerta o incolla direttamente il testo.",
     "error_scraper_blocked": "Non siamo riusciti a leggere i dettagli del lavoro da questo link. Incolla la descrizione manualmente qui sotto.",
-    "optimizing": "Ottimizzazione CV in corso..."
+    "optimizing": "Ottimizzazione CV in corso...",
+    "language_hint": "Il risultato sarà generato nella stessa lingua dell'offerta di lavoro."
   },
   "spinners": [
     "Il tuo CV, ottimizzato per ogni lavoro",
