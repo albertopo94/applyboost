@@ -68,7 +68,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Editor Area */}
-          <div className="lg:col-span-8 space-y-6 flex flex-col h-[800px]">
+          <div className="lg:col-span-8 space-y-6">
             
             <PremiumScoreHeader 
               original={data.score_original} 
@@ -89,7 +89,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             </div>
 
             {/* Main Editor Container */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-[800px] flex flex-col min-h-0">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-full">
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
               <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between rounded-t-3xl">
@@ -105,7 +105,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 
                 <button
                   onClick={handleCopy}
-                  className="p-2 pointer-events-auto hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group relative"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors group relative"
                   title="Copiar contenido"
                 >
                   {copied ? (
@@ -116,8 +116,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 </button>
               </div>
 
-              {/* Scrollable Area - Fixed height with internal scroll */}
-              <div className="flex-grow overflow-y-auto noscrollbar relative pt-12 min-h-0">
+              {/* Scrollable Area */}
+              <div className="min-h-[600px] max-h-[900px] overflow-y-auto noscrollbar relative pt-12">
                 <HighlightedContent 
                   content={activeTab === "cv" ? cvText : clText}
                   onUpdate={activeTab === "cv" ? setCvText : setClText}
@@ -127,29 +127,25 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               </div>
               
               {/* Bottom Gradient Fade to indicate scrollable content */}
-              <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
             </div>
           </div>
 
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 h-[800px] flex flex-col gap-6 overflow-hidden">
-            <div className="flex flex-col gap-6 h-full min-h-0">
-              <ExportPanel 
-                templateMode={templateMode}
-                setTemplateMode={setTemplateMode}
-                handleDownload={handleDownload}
-                downloadingType={downloadingType}
-                hasCL={hasCL}
-              />
-              
-              <div className="flex-grow overflow-hidden">
-                <AuditSidebar 
-                  explanation={data.cover_letter_explanation}
-                  diff={data.diff}
-                  activeTab={activeTab}
-                />
-              </div>
-            </div>
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
+            <ExportPanel 
+              templateMode={templateMode}
+              setTemplateMode={setTemplateMode}
+              handleDownload={handleDownload}
+              downloadingType={downloadingType}
+              hasCL={hasCL}
+            />
+            
+            <AuditSidebar 
+              explanation={data.cover_letter_explanation}
+              diff={data.diff}
+              activeTab={activeTab}
+            />
           </div>
         </div>
       </main>
