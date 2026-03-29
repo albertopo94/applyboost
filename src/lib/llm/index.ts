@@ -41,7 +41,8 @@ function getProviderOrder(): string[] {
  */
 export async function callLLM(
   prompt: string, 
-  excludeGeminiIndex?: number
+  excludeGeminiIndex?: number,
+  originalCV?: string
 ): Promise<LLMOutput> {
   const providerOrder = getProviderOrder();
 
@@ -61,7 +62,7 @@ export async function callLLM(
     try {
       console.log(`\n[LLM] >>> INTENTO ${attempts + 1}: Llamando a [${providerName.toUpperCase()}]...`);
       const rawOutput = await provider.chat(prompt, AbortSignal.timeout(55000), excludeGeminiIndex);
-      const result = parseAndValidate(rawOutput);
+      const result = parseAndValidate(rawOutput, { originalCV });
 
       if (result.success) {
         currentProviderIndex = (currentProviderIndex + 1) % providerOrder.length;
@@ -72,7 +73,7 @@ export async function callLLM(
       // JSON validation failed — retry once with same provider
       console.warn(`[LLM] ⚠️ [${providerName.toUpperCase()}]: JSON inválido, reintentando una vez...`);
       const retryOutput = await provider.chat(prompt, AbortSignal.timeout(55000), excludeGeminiIndex);
-      const retryResult = parseAndValidate(retryOutput);
+      const retryResult = parseAndValidate(retryOutput, { originalCV });
 
       if (retryResult.success) {
         currentProviderIndex = (currentProviderIndex + 1) % providerOrder.length;

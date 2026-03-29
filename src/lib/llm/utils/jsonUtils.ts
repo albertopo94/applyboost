@@ -1,4 +1,5 @@
 import { LLMOutputSchema, type LLMOutput } from "../types";
+import { validateIntegrity } from "./integrityUtils";
 
 /**
  * Extract JSON from an LLM response that might be wrapped in markdown fences or have extra text.
@@ -21,7 +22,10 @@ export function extractJSON(text: string): string {
 /**
  * Parse raw LLM text output and validate against Zod schema.
  */
-export function parseAndValidate(raw: string): {
+export function parseAndValidate(
+  raw: string,
+  context?: { originalCV?: string }
+): {
   success: true;
   data: LLMOutput;
 } | {
@@ -54,6 +58,25 @@ export function parseAndValidate(raw: string): {
 
     const parsed = JSON.parse(jsonStr);
     const validated = LLMOutputSchema.parse(parsed);
+
+    // --- INTEGRITY & FACT-CHECKING ---
+    if (context?.originalCV) {
+      const integrity = validateIntegrity(validated.cv_optimizado, context.originalCV);
+      
+      // Separate Security from Hallucinations
+      const securityIssues = integrity.issues.filter(i => i.includes("Security Breach"));
+      const hallucinationIssues = integrity.issues.filter(i => !i.includes("Security Breach"));
+
+      if (securityIssues.length > 0) {
+        throw new Error(`Security Breach Detected: ${securityIssues.join("; ")}`);
+      }
+
+      if (hallucinationIssues.length > 0) {
+        console.warn(`[INTEGRITY_WARNING] Hallucinations detected: ${hallucinationIssues.join("; ")}`);
+        // We let it pass to save tokens, but we log it for future prompt tuning.
+      }
+    }
+
     return { success: true, data: validated };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

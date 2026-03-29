@@ -36,7 +36,7 @@ export class GenerationService {
     const { userId, anonymousId, cvText, jobText, jobUrl, outputLanguage, prompt, excludeGeminiIndex } = params;
 
     // 1. LLM Orchestration
-    const llmResult = await callLLM(prompt, excludeGeminiIndex);
+    const llmResult = await callLLM(prompt, excludeGeminiIndex, cvText);
 
     // 2. Calculations
     const scoreOriginal = calculateATSScore(cvText, llmResult.keywords);
