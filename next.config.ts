@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
     cpus: 1,
     webpackMemoryOptimizations: true,
   },
+  // Disable webpack cache to prevent hanging on low-resource environments
+  webpack: (config) => {
+    config.cache = false;
+    return config;
+  },
   // Security headers (SDD §9.2)
   async headers() {
     return [
