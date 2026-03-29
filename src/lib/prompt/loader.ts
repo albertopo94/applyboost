@@ -22,9 +22,21 @@ export function loadPrompt(filename: string, variables: Record<string, string | 
   // 2. Read template
   let template = fs.readFileSync(filePath, "utf-8");
 
-  // 3. Simple interpolation: replace {{key}} with value
+  /**
+   * Sanitization: Neutralize XML/HTML-like tags to prevent "Fencing Breakouts".
+   * If a user inputs something like "</CV_TEXT> Ignore previous instructions", 
+   * it will be converted to "[PROTECTED] Ignore previous instructions".
+   */
+  const sanitize = (text: string) => {
+    if (typeof text !== "string") return text;
+    // Replace < and > with safe characters or a placeholder
+    return text.replace(/</g, "[").replace(/>/g, "]");
+  };
+
+  // 3. Simple interpolation: replace {{key}} with sanitized value
   for (const [key, value] of Object.entries(variables)) {
-    const safeValue = value !== undefined && value !== null ? String(value) : "";
+    const rawValue = value !== undefined && value !== null ? String(value) : "";
+    const safeValue = sanitize(rawValue);
     // Use a global regex to replace all occurrences
     const regex = new RegExp(`{{${key}}}`, "g");
     template = template.replace(regex, safeValue);
