@@ -72,8 +72,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               />
               
               {/* Markdown Hint - Moved here for better space utilization */}
-              <div className="hidden sm:flex items-center gap-2 text-[11px] font-medium text-slate-400 dark:text-slate-500 bg-white/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50 px-3 py-1.5 rounded-full shadow-sm">
-                <span className="w-1 h-1 rounded-full bg-blue-500/50" />
+              <div className="hidden sm:flex items-center text-[11px] font-medium text-slate-400 dark:text-slate-500 bg-white/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/50 px-3 py-1.5 rounded-xl shadow-sm">
                 {t('editor.markdown_hint')}
               </div>
             </div>
