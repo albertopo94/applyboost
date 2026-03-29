@@ -96,11 +96,21 @@ export async function POST(request: NextRequest) {
       // --- STEP 3 & 4: ANALYSIS & GENERATION ---
       await sendProgress(3);
       
+      // Detect language if "auto"
+      let finalLanguage: "es" | "en" | "it" = "es";
+      if (outputLanguage === "auto") {
+        const { detectTextsLanguages } = await import("@/lib/llm/languageDetector");
+        const detected = await detectTextsLanguages({ cv: cvText, job: jobTextFromForm || "" });
+        finalLanguage = (detected.job as any) || "es";
+      } else {
+        finalLanguage = outputLanguage as any;
+      }
+
       const { buildMasterPrompt } = await import("@/lib/prompt/promptMaestro");
       const prompt = buildMasterPrompt({
         cvText,
         jobDescription: jobTextFromForm || "",
-        outputLanguage
+        outputLanguage: finalLanguage
       });
 
       const result = await GenerationService.generateAndStore({
@@ -109,7 +119,7 @@ export async function POST(request: NextRequest) {
         cvText,
         jobText: jobTextFromForm || "",
         jobUrl: jobUrl || undefined,
-        outputLanguage,
+        outputLanguage: finalLanguage,
         prompt,
         excludeGeminiIndex: usedKeyIndex,
       });
