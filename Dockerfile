@@ -12,6 +12,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_IGNORE_TYPE_CHECKING=1
 ENV NEXT_IGNORE_ESLINT=1
+ENV GENERATE_SOURCEMAP=false
 
 # INYECCION DE VARIABLES CRITICAS PARA EL CLIENTE (NEXT_PUBLIC)
 # Se necesitan en tiempo de BUILD para que el cliente de Supabase funcione.
@@ -26,7 +27,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application with strict memory limits
-ENV NODE_OPTIONS="--max-old-space-size=1536"
+ENV NODE_OPTIONS="--max-old-space-size=1280"
 RUN bun run build
 
 # Stage 3: Runner (Production Environment)
