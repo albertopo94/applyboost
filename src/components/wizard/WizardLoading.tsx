@@ -31,20 +31,20 @@ export default function WizardLoading({ currentStep = 0 }: WizardLoadingProps) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] text-center px-4 animate-in fade-in duration-500">
-      <div className="relative flex items-center justify-center w-20 h-20 mb-8">
-        <div className="absolute inset-0 rounded-full border-[3px] border-blue-100 dark:border-blue-900/50 border-t-blue-600 dark:border-t-blue-500 animate-spin" />
-        <FileText className="w-8 h-8 text-blue-600 dark:text-blue-500 animate-pulse" />
+      <div className="relative flex items-center justify-center w-24 h-24 mb-12">
+        <div className="absolute inset-0 rounded-full border-[3px] border-blue-100 dark:border-blue-900/50 border-t-blue-600 dark:border-t-blue-500 animate-spin [animation-duration:3s]" />
+        <FileText className="w-10 h-10 text-blue-600 dark:text-blue-500 animate-pulse [animation-duration:2s]" />
       </div>
       
-      <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-50 tracking-tight mb-3">
+      <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-50 tracking-tight mb-6">
         {t("wizard.optimizing")}
       </h3>
 
       {/* Progress Bar and Fraction */}
-      <div className="w-full max-w-xs mb-8 space-y-2.5">
+      <div className="w-full max-w-xs mb-12 space-y-3.5">
         <div className="flex justify-between items-center text-[10px] font-black text-blue-600/80 dark:text-blue-400/80 uppercase tracking-[0.2em] antialiased">
           <span>Proceso en curso</span>
-          <span className="bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100/50 dark:border-blue-800/50">
+          <span className="bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full border border-blue-100/50 dark:border-blue-800/50">
             {currentStep} de {TOTAL_STEPS} superado
           </span>
         </div>
@@ -56,7 +56,7 @@ export default function WizardLoading({ currentStep = 0 }: WizardLoadingProps) {
         </div>
       </div>
       
-      <div className="h-6 relative w-full overflow-hidden flex justify-center">
+      <div className="h-8 relative w-full overflow-hidden flex justify-center">
         {spinners.map((claim, idx) => (
           <span
             key={idx}
