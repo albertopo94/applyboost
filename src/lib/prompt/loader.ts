@@ -14,6 +14,8 @@ export function loadPrompt(filename: string, variables: Record<string, string | 
   const filePath = path.join(process.cwd(), "src/lib/prompts", filename);
 
   if (!fs.existsSync(filePath)) {
+    console.error(`[PROMPT_LOADER] Error: File not found at ${filePath}`);
+    console.log(`[PROMPT_LOADER] Current working directory: ${process.cwd()}`);
     throw new Error(`Prompt file not found: ${filePath}`);
   }
 

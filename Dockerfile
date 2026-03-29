@@ -27,7 +27,7 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the application with strict memory limits
-ENV NODE_OPTIONS="--max-old-space-size=1280"
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 RUN bun run build
 
 # Stage 3: Runner (Production Environment)
