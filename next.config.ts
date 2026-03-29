@@ -19,6 +19,20 @@ const nextConfig: NextConfig = {
     workerThreads: false,
     cpus: 1,
   },
+  // Optimization for low-RAM environments
+  webpack: (config, { isServer }) => {
+    if (config.optimization) {
+      config.optimization.minimize = true;
+    }
+    // Limit to 1 worker for minification
+    const TerserPlugin = require('terser-webpack-plugin');
+    config.optimization.minimizer = [
+      new TerserPlugin({
+        parallel: false,
+      }),
+    ];
+    return config;
+  },
   // Security headers (SDD §9.2)
   async headers() {
     return [
