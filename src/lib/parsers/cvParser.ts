@@ -53,8 +53,12 @@ export async function parseWithGemini(
       usedKeyIndex: result.usedKeyIndex
     };
   } catch (error: any) {
-    // Propagate specific OCR errors
-    if (error.message.includes("OCR_FAILED_TIMEOUT") || error.message.includes("OCR_FAILED_QUOTA")) {
+    // Propagate specific OCR errors or validation errors
+    if (
+      error.message.includes("OCR_FAILED_TIMEOUT") || 
+      error.message.includes("OCR_FAILED_QUOTA") ||
+      error.message === "INVALID_CV_CONTENT"
+    ) {
       throw error;
     }
     
