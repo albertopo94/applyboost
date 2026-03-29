@@ -89,7 +89,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             </div>
 
             {/* Main Editor Container */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group flex-grow flex flex-col">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-[800px] flex flex-col">
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
               <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between rounded-t-3xl">
@@ -116,8 +116,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 </button>
               </div>
 
-              {/* Scrollable Area - Content now defines height */}
-              <div className="flex-grow relative pt-12">
+              {/* Scrollable Area - Fixed height with internal scroll */}
+              <div className="flex-grow overflow-y-auto noscrollbar relative pt-12">
                 <HighlightedContent 
                   content={activeTab === "cv" ? cvText : clText}
                   onUpdate={activeTab === "cv" ? setCvText : setClText}
@@ -129,8 +129,8 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
           </div>
 
           {/* Sidebar Area */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="lg:sticky lg:top-8 space-y-6">
+          <div className="lg:col-span-4 h-[800px] flex flex-col gap-6">
+            <div className="flex flex-col gap-6 h-full">
               <ExportPanel 
                 templateMode={templateMode}
                 setTemplateMode={setTemplateMode}
@@ -139,11 +139,13 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
                 hasCL={hasCL}
               />
               
-              <AuditSidebar 
-                explanation={data.cover_letter_explanation}
-                diff={data.diff}
-                activeTab={activeTab}
-              />
+              <div className="flex-grow overflow-hidden">
+                <AuditSidebar 
+                  explanation={data.cover_letter_explanation}
+                  diff={data.diff}
+                  activeTab={activeTab}
+                />
+              </div>
             </div>
           </div>
         </div>
