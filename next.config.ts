@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Extreme RAM savings for small VPS
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+    webpackMemoryOptimizations: true,
+  },
   // Security headers (SDD §9.2)
   async headers() {
     return [

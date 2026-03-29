@@ -24,9 +24,9 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application with strict memory limits (2GB for VPS 4GB + Swap)
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN bun run build && ls -la .next/standalone
+# Build the application with strict memory limits
+ENV NODE_OPTIONS="--max-old-space-size=1536"
+RUN bun run build
 
 # Stage 3: Runner (Production Environment)
 FROM base AS runner
