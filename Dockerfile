@@ -13,6 +13,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_IGNORE_TYPE_CHECKING=1
 ENV NEXT_IGNORE_ESLINT=1
 
+# INYECCION DE VARIABLES CRITICAS PARA EL CLIENTE (NEXT_PUBLIC)
+# Se necesitan en tiempo de BUILD para que el cliente de Supabase funcione.
+RUN echo "NEXT_PUBLIC_SUPABASE_URL=https://otpyrwkjpareekcftbhj.supabase.co" > .env
+RUN echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk" >> .env
+
 # Copy dependency files and install
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
