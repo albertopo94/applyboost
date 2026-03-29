@@ -51,7 +51,7 @@ export default function Wizard({ onComplete }: WizardProps) {
 
     setIsUploading(true);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds timeout
 
     try {
       const formData = new FormData();
