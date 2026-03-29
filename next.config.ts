@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
   // Optimization for low-RAM environments
   webpack: (config) => {
     config.cache = false;
+    // Disable heavy optimizations that consume RAM
+    if (config.optimization) {
+      config.optimization.minimize = true; // Still minimize, but we already limited to 1 worker
+    }
     return config;
   },
   // Security headers (SDD §9.2)
