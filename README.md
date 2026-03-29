@@ -186,7 +186,7 @@ ApplyBoost es:
 
 ---
 
-### 🌐 Infraestructura y Gestión de Servidor (CubePath)
+### 🌐 Infraestructura y Gestión de Servidor (**CubePath** - https://cubepath.com/)
 
 ApplyBoost utiliza un entorno de producción basado en **Auto-alojamiento (Self-hosting)** sobre un VPS de **CubePath**, lo que permite un control total sobre las dependencias del sistema (especialmente Chromium para Puppeteer).
 
