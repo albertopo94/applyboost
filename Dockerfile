@@ -26,7 +26,7 @@ COPY . .
 
 # Build the application with strict memory limits
 ENV NODE_OPTIONS="--max-old-space-size=1024"
-RUN free -h && bun run build && ls -la .next/standalone
+RUN bun run build && ls -la .next/standalone
 
 # Stage 3: Runner (Production Environment)
 FROM base AS runner
