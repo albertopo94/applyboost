@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: [],
   // Disable type checking and linting during build to save RAM on the VPS
   typescript: {
     ignoreBuildErrors: true,
@@ -13,17 +12,6 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   images: {
     unoptimized: true,
-  },
-  // Reduce parallelization to save RAM
-  experimental: {
-    workerThreads: false,
-    cpus: 1,
-  },
-  // Optimization for low-RAM environments
-  webpack: (config) => {
-    // Disable webpack cache to avoid "Serializing big strings" hang
-    config.cache = false;
-    return config;
   },
   // Security headers (SDD §9.2)
   async headers() {
