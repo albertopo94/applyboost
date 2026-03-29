@@ -22,13 +22,18 @@ export class GeminiService implements AIService {
     }
 
     let lastError: any = null;
+    let keysAttempted = 0;
 
     // Internal rotation loop
     for (let i = 0; i < keys.length; i++) {
       // 1. Pre-emptive cooldown check (Global)
       if (!GeminiKeyManager.isKeyAvailable(i)) {
-        console.log(`[GEMINI_COOLDOWN] Skipping Key #${i} (exhausted, waiting for reset).`);
-        continue;
+        // If it's the ONLY key, we have to try it even if it's in cooldown
+        if (keys.length > 1) {
+          console.log(`[GEMINI_COOLDOWN] Skipping Key #${i} (exhausted, waiting for reset).`);
+          continue;
+        }
+        console.warn(`[GEMINI_COOLDOWN] Key #${i} is the only one, trying despite cooldown.`);
       }
 
       // 2. Logic: skip the key if it matches the excluded index (Per-request)
@@ -42,6 +47,7 @@ export class GeminiService implements AIService {
       }
 
       const apiKey = keys[i];
+      keysAttempted++;
       const genAI = new GoogleGenerativeAI(apiKey);
 
       try {
@@ -101,12 +107,16 @@ export class GeminiService implements AIService {
       }
     }
 
-    // If we reached here, all keys failed or were rate limited
+    // If we reached here, either all keys failed, were rate limited, or all were in cooldown
+    if (keysAttempted === 0) {
+      throw new LLMRateLimitError(`${this.name} (ALL_KEYS_IN_COOLDOWN)`);
+    }
+
     if (lastError?.status === 429 || lastError?.message?.includes("429")) {
       throw new LLMRateLimitError(this.name);
     }
     
-    const msg = lastError instanceof Error ? lastError.message : String(lastError);
+    const msg = lastError instanceof Error ? lastError.message : String(lastError || "Unknown error");
     throw new Error(`Gemini all keys failed. Last error: ${msg}`);
   }
 }

@@ -46,16 +46,22 @@ export class GeminiVisionService {
     console.log(`[OCR_START][${requestId}] Multimodal extraction started. Size: ${payloadSize}KB, MIME: ${mimeType}. Available Keys: ${keys.length}`);
 
     const base64Data = buffer.toString("base64");
+    let keysAttempted = 0;
     
     // Iterate through available keys
     for (let i = 0; i < keys.length; i++) {
       // Pre-emptive cooldown check
       if (!GeminiKeyManager.isKeyAvailable(i)) {
-        console.log(`[GEMINI_COOLDOWN][${requestId}] Skipping Key #${i} (exhausted, waiting for reset).`);
-        continue;
+        // If it's the ONLY key, we have to try it even if it's in cooldown
+        if (keys.length > 1) {
+          console.log(`[GEMINI_COOLDOWN][${requestId}] Skipping Key #${i} (exhausted, waiting for reset).`);
+          continue;
+        }
+        console.warn(`[GEMINI_COOLDOWN][${requestId}] Key #${i} is the only one, trying despite cooldown.`);
       }
 
       const apiKey = keys[i];
+      keysAttempted++;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         console.error(`[OCR_TIMEOUT][${requestId}][Key #${i}] Gemini API took too long. Aborting.`);
@@ -152,6 +158,10 @@ export class GeminiVisionService {
           throw error;
         }
       }
+    }
+
+    if (keysAttempted === 0) {
+      throw new Error("OCR_FAILED_QUOTA: Todas las llaves de Gemini están en enfriamiento (cooldown).");
     }
 
     throw new Error("OCR_FAILED_QUOTA: Todas las llaves de Gemini han agotado su cuota (Rate Limit).");

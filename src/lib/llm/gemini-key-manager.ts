@@ -19,7 +19,7 @@ export class GeminiKeyManager {
    * Parses the environment variables on the first call and caches the result.
    */
   static getKeys(): string[] {
-    // Return cached keys if already parsed
+    // Return cached keys ONLY if we have them
     if (this.keys.length > 0) {
       return this.keys;
     }
@@ -27,9 +27,11 @@ export class GeminiKeyManager {
     const pluralKeys = process.env.GEMINI_API_KEYS;
     const singularKey = process.env.GEMINI_API_KEY;
 
+    let foundKeys: string[] = [];
+
     if (pluralKeys) {
       // Split by comma and clean up whitespace
-      this.keys = pluralKeys
+      foundKeys = pluralKeys
         .split(",")
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
@@ -37,11 +39,16 @@ export class GeminiKeyManager {
       // Fallback to the single key
       const trimmed = singularKey.trim();
       if (trimmed) {
-        this.keys = [trimmed];
+        foundKeys = [trimmed];
       }
     }
 
-    return this.keys;
+    // Only cache if we actually found something
+    if (foundKeys.length > 0) {
+      this.keys = foundKeys;
+    }
+
+    return foundKeys;
   }
 
   /**
