@@ -68,7 +68,7 @@ export class GeminiVisionService {
       const timeoutId = setTimeout(() => {
         console.error(`[OCR_TIMEOUT][${requestId}][Key #${i}] Gemini API took too long. Aborting.`);
         controller.abort();
-      }, 25000);
+      }, 45000);
 
       try {
         if (i > 0) {
