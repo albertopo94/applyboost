@@ -2,9 +2,16 @@
 FROM oven/bun:latest AS base
 WORKDIR /app
 
-# Stage 2: Builder (Compilation - No Chromium here to save RAM)
+# Stage 2: Builder (Compilation)
 FROM base AS builder
 WORKDIR /app
+
+# Optimization: Skip Puppeteer's internal Chromium download during build
+# This saves ~500MB of RAM and Disk context
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_IGNORE_TYPE_CHECKING=1
+ENV NEXT_IGNORE_ESLINT=1
 
 # Copy dependency files and install
 COPY package.json bun.lock ./
@@ -13,18 +20,11 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# INYECCION DE VARIABLES CRITICAS PARA EL CLIENTE (NEXT_PUBLIC)
-RUN echo "NEXT_PUBLIC_SUPABASE_URL=https://otpyrwkjpareekcftbhj.supabase.co" > .env
-RUN echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90cHlyd2tqcGFyZWVrY2Z0YmhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzODg4ODYsImV4cCI6MjA4OTk2NDg4Nn0.AP527dUOZhQK0Soi8Zqggc754e8uPSD8EY6EQJpQMQk" >> .env
-RUN echo "NEXT_TELEMETRY_DISABLED=1" >> .env
-RUN echo "NEXT_IGNORE_TYPE_CHECKING=1" >> .env
-RUN echo "NEXT_IGNORE_ESLINT=1" >> .env
-
-# Build the application with memory limits
+# Build the application with strict memory limits
 ENV NODE_OPTIONS="--max-old-space-size=1024"
 RUN bun run build
 
-# Stage 3: Runner (Production Environment - WITH Chromium)
+# Stage 3: Runner (Production Environment)
 FROM base AS runner
 WORKDIR /app
 
@@ -52,14 +52,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy standalone build from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Re-install runtime-specific dependencies (like canvas)
-# This ensures @napi-rs/canvas binary is correctly linked in the runner stage
+# Re-install runtime-specific dependencies
 RUN bun install --production @napi-rs/canvas
 
 EXPOSE 3000
