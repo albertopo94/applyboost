@@ -186,6 +186,26 @@ ApplyBoost es:
 
 ---
 
+### 🌐 Infraestructura y Gestión de Servidor (CubePath)
+
+ApplyBoost utiliza un entorno de producción basado en **Auto-alojamiento (Self-hosting)** sobre un VPS de **CubePath**, lo que permite un control total sobre las dependencias del sistema (especialmente Chromium para Puppeteer).
+
+#### Especificaciones y Recursos
+*   **Proveedor**: CubePath (Plan `gp.micro` en Barcelona, ES).
+*   **Hardware**: 2 vCPU, 4 GB RAM, 80 GB SSD.
+*   **Gestión**: Panel **Dokploy** para orquestación de contenedores Docker.
+*   **Proxy Inverso**: **Traefik** (integrado en Dokploy) gestionando la terminación de certificados SSL automáticos vía **Let's Encrypt**.
+*   **Red**: Configuración de **Zonas DNS** en el panel de CubePath, vinculadas al dominio gratuito `applyboost.eu.org` (registrado en NIC.eu.org) mediante los nameservers `atlas.ns.cubepath.com` y `titan.ns.cubepath.com`.
+
+#### Configuraciones Críticas y Peculiaridades
+Durante la puesta en marcha, se implementaron soluciones técnicas específicas para este entorno:
+*   **Networking (Filtro IPv4)**: Se forzó el uso de IPv4 en el gestor de paquetes (`Acquire::ForceIPv4 "true"`) para evitar fallos de resolución de espejos en el datacenter de Barcelona.
+*   **Gestión de RAM Estricta**: Dado que el VPS opera con ~2.5GB de RAM utilizada en estado estable, se configuró un límite estricto de **1024MB - 1536MB** (`NODE_OPTIONS`) y la activación de `webpackMemoryOptimizations` para el proceso de compilación de Next.js 15, evitando el bloqueo del sistema por falta de memoria (OOM).
+*   **Mantenimiento de Almacenamiento**: Debido al alto volumen de datos generado por las capas de Docker y los binarios de Chromium, se requiere una política de limpieza periódica (`docker system prune -af --volumes`) para evitar la saturación del SSD de 80GB.
+*   **Build stand-alone**: Optimización del `next.config.ts` y el `Dockerfile` para generar un bundle mínimo que reduzca el I/O Wait en el disco del VPS durante el despliegue.
+
+---
+
 ## 🔗 Resumen
 
 Pega una oferta.
@@ -193,3 +213,4 @@ Sube tu CV.
 Recibe una candidatura lista para enviar.
 
 Sin fricción.
+
