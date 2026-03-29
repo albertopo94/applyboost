@@ -34,13 +34,19 @@ export function loadPrompt(filename: string, variables: Record<string, string | 
   };
 
   // 3. Simple interpolation: replace {{key}} with sanitized value
+  let result = template;
   for (const [key, value] of Object.entries(variables)) {
     const rawValue = value !== undefined && value !== null ? String(value) : "";
     const safeValue = sanitize(rawValue);
-    // Use a global regex to replace all occurrences
-    const regex = new RegExp(`{{${key}}}`, "g");
-    template = template.replace(regex, safeValue);
+    
+    // Use split/join instead of regex for the replacement value to avoid RegExp special char issues
+    const placeholder = `{{${key}}}`;
+    result = result.split(placeholder).join(safeValue);
   }
 
-  return template;
+  if (!result || result.trim().length === 0) {
+    console.error(`[PROMPT_LOADER] Critical Error: Generated prompt for ${filename} is EMPTY!`);
+  }
+
+  return result;
 }
