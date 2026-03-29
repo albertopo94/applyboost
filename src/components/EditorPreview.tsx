@@ -75,13 +75,19 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
               <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between pointer-events-none select-none rounded-t-3xl">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute w-3.5 h-3.5 rounded-full bg-blue-500/20 animate-ping" />
-                    <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.7)]" />
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute w-3.5 h-3.5 rounded-full bg-blue-500/20 animate-ping" />
+                      <div className="relative w-1.5 h-1.5 rounded-full bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.7)]" />
+                    </div>
+                    <span className="text-[10px] font-black text-blue-700/70 dark:text-blue-400/70 uppercase tracking-[0.15em] antialiased">
+                      {t('editor.editable')}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-black text-blue-700/70 dark:text-blue-400/70 uppercase tracking-[0.15em] antialiased">
-                    {t('editor.editable')}
+                  {/* Markdown Hint */}
+                  <span className="hidden sm:inline-block text-xs font-medium text-slate-400 dark:text-slate-500 bg-slate-100/50 dark:bg-slate-800/50 px-2.5 py-1 rounded-md">
+                    {t('editor.markdown_hint')}
                   </span>
                 </div>
                 
