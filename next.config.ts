@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -13,9 +13,16 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  // Memory optimizations for VPS (but not too restrictive)
+  // Extreme RAM savings for small VPS
   experimental: {
+    workerThreads: false,
+    cpus: 1,
     webpackMemoryOptimizations: true,
+  },
+  // Disable webpack cache to prevent hanging on low-resource environments
+  webpack: (config) => {
+    config.cache = false;
+    return config;
   },
   // Security headers (SDD §9.2)
   async headers() {

@@ -24,8 +24,8 @@ RUN bun install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application with increased memory limit
-ENV NODE_OPTIONS="--max-old-space-size=3072"
+# Build the application with balanced memory limit
+ENV NODE_OPTIONS="--max-old-space-size=2560"
 RUN bun run build
 
 # Verify build output
