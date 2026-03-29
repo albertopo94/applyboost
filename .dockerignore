@@ -21,5 +21,9 @@ _tmp_init/
 .playwright-mcp/
 .windsurf/
 .atl/
+README.md
+CHANGELOG.md
+GEMINI.md
+*.log
 
 
