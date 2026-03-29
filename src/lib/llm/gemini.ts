@@ -90,10 +90,14 @@ export class GeminiService implements AIService {
       } catch (error: any) {
         lastError = error;
         
-        // Handle Rate Limit (429) specifically by continuing the loop
-        if (error?.status === 429 || error?.message?.includes("429")) {
-          console.warn(`[GEMINI_RATE_LIMIT] Key #${i} exhausted. Rotating...`);
-          GeminiKeyManager.markAsExhausted(i); // Mark for 60s cooldown
+        // Handle Rate Limit (429) or Server Overload (503) specifically by continuing the loop
+        const isRateLimit = error?.status === 429 || error?.message?.includes("429");
+        const isOverload = error?.status === 503 || error?.message?.includes("503");
+
+        if (isRateLimit || isOverload) {
+          const reason = isRateLimit ? "Rate Limit (429)" : "Server Overload (503)";
+          console.warn(`[GEMINI_RETRY][Key #${i}] ${reason} reached. Rotating...`);
+          GeminiKeyManager.markAsExhausted(i, isRateLimit ? 60000 : 10000); 
           continue; 
         }
         
@@ -101,8 +105,8 @@ export class GeminiService implements AIService {
         const isTimeout = error?.name === "TimeoutError" || error?.name === "AbortError";
         if (isTimeout) throw error;
 
-        // For other errors, if we have more keys, we could try them, 
-        // but typically structural errors won't be fixed by changing the key.
+        // For other unexpected errors, log and try next key if available
+        console.error(`[GEMINI_ERROR][Key #${i}] Unexpected error:`, error?.message || error);
         if (i === keys.length - 1) break;
       }
     }
