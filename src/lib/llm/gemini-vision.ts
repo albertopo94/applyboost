@@ -125,10 +125,11 @@ export class GeminiVisionService {
 
         clearTimeout(timeoutId);
 
-        // Handle Rate Limit (429) specifically by continuing the loop
-        if (response.status === 429) {
-          console.warn(`[OCR_RATE_LIMIT][${requestId}][Key #${i}] Rate Limit reached for this key.`);
-          GeminiKeyManager.markAsExhausted(i); // Mark for 60s cooldown
+        // Handle Rate Limit (429) or Server Overload (503) by continuing the loop
+        if (response.status === 429 || response.status === 503) {
+          const reason = response.status === 429 ? "Rate Limit" : "Server Overload (503)";
+          console.warn(`[OCR_RETRY][${requestId}][Key #${i}] ${reason} reached. Rotating...`);
+          GeminiKeyManager.markAsExhausted(i, response.status === 429 ? 60000 : 10000); // 60s for 429, 10s for 503
           continue; // Try next key
         }
 
