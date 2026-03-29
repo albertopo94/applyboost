@@ -31,6 +31,7 @@ export async function parseWithGemini(
 ): Promise<CVParseResult> {
   try {
     const result = await GeminiVisionService.extractTextFromFile(buffer, mimeType, requestId);
+    console.log(`[parseWithGemini][${requestId}] Gemini Result: is_cv=${result.is_cv}, has_content=${!!result.markdown_content}`);
     
     if (!result.is_cv) {
       console.warn(`[parseWithGemini][${requestId}] Validation failed: Document is NOT a CV.`);
@@ -63,7 +64,8 @@ export async function parseWithGemini(
     }
     
     console.error(`[parseWithGemini][${requestId}] Error:`, error);
-    throw new Error(`CV_PARSE_ERROR: Failed to extract content using Multimodal AI.`);
+    const originalMsg = error instanceof Error ? error.message : String(error);
+    throw new Error(`CV_PARSE_ERROR: ${originalMsg}`);
   }
 }
 
