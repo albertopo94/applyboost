@@ -60,7 +60,7 @@ export async function callLLM(
 
     try {
       console.log(`\n[LLM] >>> INTENTO ${attempts + 1}: Llamando a [${providerName.toUpperCase()}]...`);
-      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(25000), excludeGeminiIndex);
+      const rawOutput = await provider.chat(prompt, AbortSignal.timeout(45000), excludeGeminiIndex);
       const result = parseAndValidate(rawOutput);
 
       if (result.success) {
@@ -71,7 +71,7 @@ export async function callLLM(
 
       // JSON validation failed — retry once with same provider
       console.warn(`[LLM] ⚠️ [${providerName.toUpperCase()}]: JSON inválido, reintentando una vez...`);
-      const retryOutput = await provider.chat(prompt, AbortSignal.timeout(25000), excludeGeminiIndex);
+      const retryOutput = await provider.chat(prompt, AbortSignal.timeout(45000), excludeGeminiIndex);
       const retryResult = parseAndValidate(retryOutput);
 
       if (retryResult.success) {
@@ -86,8 +86,8 @@ export async function callLLM(
       const isTimeout = error?.name === "TimeoutError" || error?.name === "AbortError";
       
       if (isTimeout) {
-        console.warn(`[LLM] ⏱️ [${providerName.toUpperCase()}]: Timeout (25s). Saltando...`);
-        errors.push(`${providerName}: timed out (25s)`);
+        console.warn(`[LLM] ⏱️ [${providerName.toUpperCase()}]: Timeout (45s). Saltando...`);
+        errors.push(`${providerName}: timed out (45s)`);
       } else if (error instanceof LLMRateLimitError) {
         console.warn(`[LLM] 🚦 [${providerName.toUpperCase()}]: Rate Limit (429). Saltando...`);
         errors.push(`${providerName}: rate limited (429)`);
