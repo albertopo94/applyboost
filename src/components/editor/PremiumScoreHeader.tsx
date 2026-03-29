@@ -18,7 +18,6 @@ export const PremiumScoreHeader = ({ original, optimized }: { original: number; 
         <div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             {t('editor.score_title')}
-            <Sparkles className="h-4 w-4 text-amber-400 fill-amber-400" />
           </h3>
           <p className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2">
             {t('editor.score_subtitle')} 
