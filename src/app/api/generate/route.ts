@@ -73,10 +73,28 @@ export async function POST(req: Request) {
 
     // 2. Parsing del CV (soporta Drop file o texto pegado)
     if (cvFile && cvFile.size > 0 && !cvText) {
-      const buffer = Buffer.from(await cvFile.arrayBuffer());
-      const parseResult = await parseCV(buffer, cvFile.type, requestId);
-      cvText = parseResult.text;
-      usedKeyIndex = parseResult.usedKeyIndex !== -1 ? parseResult.usedKeyIndex : undefined;
+      try {
+        const buffer = Buffer.from(await cvFile.arrayBuffer());
+        const parseResult = await parseCV(buffer, cvFile.type, requestId);
+        cvText = parseResult.text;
+        usedKeyIndex = parseResult.usedKeyIndex !== -1 ? parseResult.usedKeyIndex : undefined;
+      } catch (err: any) {
+        console.error(`[API_GENERATE][${requestId}] CV Parsing Error:`, err.message);
+        
+        // Specific handling for invalid content (non-CV files)
+        if (err.message === "INVALID_CV_CONTENT") {
+          return NextResponse.json(
+            { error: { code: "INVALID_CV_CONTENT", message: "El archivo subido no parece ser un CV válido. Por favor, subí tu currículum, perfil profesional o portfolio.", request_id: requestId } },
+            { status: 422 }
+          );
+        }
+        
+        // Propagate other parsing errors
+        return NextResponse.json(
+          { error: { code: "CV_PARSE_ERROR", message: err.message, request_id: requestId } },
+          { status: 500 }
+        );
+      }
     } else if (!cvText || cvText.trim().length === 0) {
       return NextResponse.json(
         { error: { code: "BAD_REQUEST", message: "Falta proporcionar tu CV", request_id: requestId } },

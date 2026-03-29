@@ -17,6 +17,7 @@
     "step1_title": "Your Resume",
     "upload_cta": "Upload PDF, DOCX or Image",
     "error_file_too_large": "The file is too large (maximum 5MB).",
+    "error_invalid_cv": "The uploaded file does not appear to be a valid CV. Please upload your resume, professional profile, or portfolio.",
     "or_paste": "Or paste text",
     "cv_placeholder": "Paste your CV content here...",
     "step2_title": "The Job Offer",

@@ -32,6 +32,11 @@ export async function parseWithGemini(
   try {
     const result = await GeminiVisionService.extractTextFromFile(buffer, mimeType, requestId);
     
+    if (!result.is_cv) {
+      console.warn(`[parseWithGemini][${requestId}] Validation failed: Document is NOT a CV.`);
+      throw new Error("INVALID_CV_CONTENT");
+    }
+
     if (!result || !result.markdown_content) {
       throw new Error("CV_PARSE_ERROR: Gemini returned empty extraction.");
     }
