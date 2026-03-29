@@ -163,10 +163,9 @@ export default function Wizard({ onComplete }: WizardProps) {
           >
             {t("hero.cta")}
           </button>
-          <p className="mt-3 text-center text-[11px] text-gray-500 dark:text-slate-400 font-medium">
+          <p className="mt-5 text-center text-[11px] text-gray-500 dark:text-slate-400 font-medium">
             {t("wizard.language_hint")}
-          </p>
-        </div>
+          </p>        </div>
       </div>
     </div>
   );
