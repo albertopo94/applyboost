@@ -24,7 +24,35 @@ export async function POST(req: Request) {
       allowAnonymous: true,
       anonymousId: bodyAnonId || undefined
     });
-    console.log(`[API_GENERATE][${requestId}] Identity resolved for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}.`);    
+    console.log(`[API_GENERATE][${requestId}] Identity resolved for ${user ? `user ${userId}` : `anonymous ${anonymousId}`}.`);
+
+    // 1.1 Quota Check for Anonymous Users (Limit: 3)
+    if (!user && anonymousId) {
+      console.log(`[API_GENERATE][${requestId}] Checking anonymous usage for ID: ${anonymousId} (2s timeout)...`);
+      
+      const timeoutPromise = new Promise<{ hasExceeded: boolean }>((resolve) =>
+        setTimeout(() => resolve({ hasExceeded: false }), 2000) // Fail-safe: allow if DB is slow
+      );
+
+      try {
+        const { hasExceeded } = await Promise.race([
+          UsageService.hasExceededLimit(anonymousId, 3),
+          timeoutPromise
+        ]);
+
+        if (hasExceeded) {
+          console.warn(`[API_GENERATE][${requestId}] LIMIT_REACHED for anonymous ID: ${anonymousId}. Blocking request.`);
+          return NextResponse.json(
+            { error: "LIMIT_REACHED" },
+            { status: 401 }
+          );
+        }
+      } catch (err) {
+        console.error(`[API_GENERATE][${requestId}] Error checking usage:`, err);
+        // Fail-safe: continue if check fails
+      }
+    }
+
     // Check for required environment variables
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey || serviceRoleKey === "your-service-role-key-here") {
