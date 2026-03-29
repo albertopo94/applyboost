@@ -94,10 +94,15 @@ export async function POST(request: NextRequest) {
       }
 
       // --- STEP 3 & 4: ANALYSIS & GENERATION ---
-      // Step 3 is internal to GenerationService (Language detection)
-      // Step 4 is the actual LLM call
       await sendProgress(3);
       
+      const { buildMasterPrompt } = await import("@/lib/prompt/promptMaestro");
+      const prompt = buildMasterPrompt({
+        cvText,
+        jobDescription: jobTextFromForm || "",
+        outputLanguage
+      });
+
       const result = await GenerationService.generateAndStore({
         userId: userId || undefined,
         anonymousId: !userId ? anonymousId : undefined,
@@ -105,8 +110,8 @@ export async function POST(request: NextRequest) {
         jobText: jobTextFromForm || "",
         jobUrl: jobUrl || undefined,
         outputLanguage,
+        prompt,
         excludeGeminiIndex: usedKeyIndex,
-        // Optional: inform service to send mid-progress if supported (not yet)
       });
 
       await sendProgress(4);
