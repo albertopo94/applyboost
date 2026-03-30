@@ -136,14 +136,14 @@ export class GeminiVisionService {
       } catch (error: any) {
         clearTimeout(timeoutId);
         
-        // If it's a timeout or structural error, we don't necessarily want to rotate 
-        // (unless it's a 429 inside the fetch catch, which is rare for native fetch)
         if (error.name === "AbortError") {
-          throw new Error("OCR_FAILED_TIMEOUT");
+          console.warn(`[OCR_TIMEOUT][${requestId}][Key #${i}] Gemini API took too long. Trying next key...`);
+          GeminiKeyManager.markAsExhausted(i, 10000); // 10s cooldown for timeout
+          continue; // ROTATE TO NEXT KEY instead of throwing
         }
 
         // If we have more keys and it's a 429 or network glitch, we could continue,
-        // but for now we only rotate on explicit 429 status codes.
+        // but for now we only rotate on explicit 429/503 status codes or timeouts.
         if (i === keys.length - 1) {
           console.error(`[OCR_FATAL][${requestId}] All keys exhausted or unexpected error:`, error);
           throw error;
@@ -155,6 +155,7 @@ export class GeminiVisionService {
       throw new Error("OCR_FAILED_QUOTA");
     }
 
-    throw new Error("OCR_FAILED_QUOTA");
+    // If we reached here, it means all keys were tried but none succeeded (all caught in the loop)
+    throw new Error("OCR_FAILED_TIMEOUT");
   }
 }
