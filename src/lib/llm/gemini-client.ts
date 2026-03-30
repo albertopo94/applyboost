@@ -1,5 +1,30 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, Schema, Type } from "@google/generative-ai";
 import { LLMRateLimitError, LLMTimeoutError, LLMProviderError } from "./types";
+
+const responseSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    cv_optimizado: { type: Type.STRING },
+    cv_explanation: { type: Type.STRING },
+    cover_letter: { type: Type.STRING },
+    cover_letter_explanation: { type: Type.STRING },
+    diff: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          cambio: { type: Type.STRING },
+          motivo: { type: Type.STRING },
+          impacto: { type: Type.STRING }
+        },
+        required: ["cambio", "motivo", "impacto"]
+      }
+    },
+    keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+    falta_dato_fields: { type: Type.ARRAY, items: { type: Type.STRING } }
+  },
+  required: ["cv_optimizado", "diff", "keywords", "falta_dato_fields"]
+};
 
 /**
  * Gemini Client: Handles a single request using a SINGLE API key.
@@ -20,6 +45,7 @@ export class GeminiClient {
         temperature: 0.2,
         maxOutputTokens: 4096,
         responseMimeType: "application/json",
+        responseSchema,
       },
     });
 
