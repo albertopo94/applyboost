@@ -10,21 +10,16 @@ import { GeminiService } from "./gemini";
 import { parseAndValidate } from "./utils/jsonUtils";
 
 // ============================================================
-// LLM Priority Orchestrator (Stateless)
-// Pattern: Strict priority fallback.
+// LLM Business-Aligned Orchestrator
+// Pattern: Gemini First (High Resiliency) -> Fallbacks
 // ============================================================
 
-/** Registry of all available provider constructors */
 const PROVIDER_REGISTRY: Record<string, () => AIService> = {
   gemini: () => new GeminiService(),
   groq: () => new GroqService(),
   cerebras: () => new CerebrasService(),
 };
 
-/**
- * Get the ordered list of provider names from .env.
- * Default: gemini, groq, cerebras
- */
 function getProviderOrder(): string[] {
   const order = process.env.LLM_PROVIDER_ORDER ?? "gemini,groq,cerebras";
   return order
@@ -34,8 +29,7 @@ function getProviderOrder(): string[] {
 }
 
 /**
- * Call the LLM with strict priority fallback.
- * Always tries the first provider in LLM_PROVIDER_ORDER first.
+ * Call the LLM with strict priority and deep Gemini resiliency.
  */
 export async function callLLM(
   prompt: string, 
@@ -43,24 +37,15 @@ export async function callLLM(
   originalCV?: string
 ): Promise<LLMOutput> {
   const providerOrder = getProviderOrder();
-
-  if (providerOrder.length === 0) {
-    throw new LLMInvalidResponseError(
-      "orchestrator",
-      "No LLM providers configured. Set LLM_PROVIDER_ORDER in .env."
-    );
-  }
-
   const errors: string[] = [];
 
-  // Use strict order (no randomization as per business logic requirement)
-  for (let i = 0; i < providerOrder.length; i++) {
-    const providerName = providerOrder[i];
+  for (const providerName of providerOrder) {
     const provider = PROVIDER_REGISTRY[providerName]();
 
     try {
-      console.log(`\n[LLM] >>> INTENTO ${i + 1}: [${providerName.toUpperCase()}]...`);
+      console.log(`\n[LLM] >>> LLAMANDO A [${providerName.toUpperCase()}]...`);
       
+      // Resiliency: 2 JSON validation attempts per provider
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
           const rawOutput = await provider.chat(prompt, AbortSignal.timeout(55000), excludeGeminiIndex);
@@ -71,41 +56,26 @@ export async function callLLM(
             return result.data;
           }
 
-          console.warn(`[LLM] ⚠️ [${providerName.toUpperCase()}] Intento ${attempt}: JSON inválido.`);
-          if (attempt === 2) {
-            throw new LLMInvalidResponseError(providerName, "JSON validation failed after 2 attempts");
-          }
-        } catch (innerError: any) {
-          const isFallbackable = innerError instanceof LLMRateLimitError || 
-                                innerError instanceof LLMTimeoutError ||
-                                innerError?.name === "TimeoutError" || 
-                                innerError?.name === "AbortError";
+          console.warn(`[LLM] ⚠️ [${providerName.toUpperCase()}] JSON inválido (Intento ${attempt}).`);
+          if (attempt === 2) throw new LLMInvalidResponseError(providerName, "JSON validation failed after 2 attempts");
+        } catch (inner: any) {
+          const isFallbackable = inner instanceof LLMRateLimitError || 
+                                inner instanceof LLMTimeoutError ||
+                                inner?.name === "TimeoutError" || 
+                                inner?.name === "AbortError";
           
-          if (isFallbackable && attempt === 1) throw innerError;
-          if (attempt === 2) throw innerError;
+          if (isFallbackable) throw inner; // Fallback to next provider
+          if (attempt === 2) throw inner;
         }
       }
     } catch (error: any) {
-      const providerTag = providerName.toUpperCase();
-      
-      if (error instanceof LLMRateLimitError || error?.status === 429) {
-        console.warn(`[LLM] 🚦 [${providerTag}]: Rate Limit reached. Saltando...`);
-        errors.push(`${providerName}: Rate limit`);
-      } else if (error instanceof LLMTimeoutError || error?.name === "TimeoutError") {
-        console.warn(`[LLM] ⏱️ [${providerTag}]: Timeout (55s). Saltando...`);
-        errors.push(`${providerName}: Timeout`);
-      } else {
-        const msg = error instanceof Error ? error.message : String(error);
-        console.error(`[LLM] 💥 [${providerTag}]: Error inesperado: ${msg}`);
-        errors.push(`${providerName}: ${msg}`);
-      }
+      const msg = error instanceof Error ? error.message : String(error);
+      console.warn(`[LLM] 🔄 [${providerName.toUpperCase()}] falló: ${msg}. Saltando...`);
+      errors.push(`${providerName}: ${msg}`);
     }
   }
 
-  throw new LLMInvalidResponseError(
-    "orchestrator",
-    `All LLM providers failed. Errors: ${errors.join("; ")}`
-  );
+  throw new LLMInvalidResponseError("orchestrator", `Todos los proveedores fallaron: ${errors.join("; ")}`);
 }
 
 export { LLMInvalidResponseError, LLMRateLimitError, LLMTimeoutError, LLMProviderError } from "./types";
