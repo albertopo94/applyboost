@@ -2,7 +2,6 @@ import { z } from "zod";
 
 // ============================================================
 // LLM Service Interface & Shared Types
-// Source: SDD §7.2, Stack §🧠
 // ============================================================
 
 /**
@@ -15,12 +14,8 @@ export interface AIService {
 
 // ============================================================
 // Error Hierarchy — SDD §Design
-// Standardized errors for resilience and fallback.
 // ============================================================
 
-/**
- * Base class for all LLM-related errors.
- */
 export abstract class LLMBaseError extends Error {
   constructor(public readonly provider: string, message: string, public readonly originalError?: any) {
     super(`[${provider.toUpperCase()}] ${message}`);
@@ -28,49 +23,30 @@ export abstract class LLMBaseError extends Error {
   }
 }
 
-/**
- * Thrown when a provider returns HTTP 429 (quota exhausted) or 503 (server overloaded).
- * Trigger for round-robin fallback.
- */
 export class LLMRateLimitError extends LLMBaseError {
   constructor(provider: string, message = "Rate limit hit or provider overloaded") {
     super(provider, message);
   }
 }
 
-/**
- * Thrown when an LLM provider times out (e.g., 55s limit).
- * Trigger for round-robin fallback.
- */
 export class LLMTimeoutError extends LLMBaseError {
   constructor(provider: string, message = "Provider timed out") {
     super(provider, message);
   }
 }
 
-/**
- * Thrown when an LLM returns a response that can't be parsed as valid JSON
- * or doesn't match the expected schema after retries.
- */
 export class LLMInvalidResponseError extends LLMBaseError {
   constructor(provider: string, message: string, originalError?: any) {
     super(provider, message, originalError);
   }
 }
 
-/**
- * Thrown for unhandled or unexpected provider errors (e.g., auth, network failure).
- */
 export class LLMProviderError extends LLMBaseError {
   constructor(provider: string, message: string, originalError?: any) {
     super(provider, message, originalError);
   }
 }
 
-/**
- * Backward compatibility: Old error name used in orchestrator.
- * TODO: Migrate all references to LLMInvalidResponseError and remove.
- */
 export class LLMOutputInvalidError extends LLMInvalidResponseError {
   constructor(message: string) {
     super("unknown", message);
@@ -93,6 +69,11 @@ export const LLMOutputSchema = z.object({
   cover_letter_explanation: z.union([z.string(), z.array(z.string())]).optional(),
   diff: z.array(DiffItemSchema).min(1),
   keywords: z.array(z.string()).min(3).max(30),
+  /**
+   * New: Suggestions for the user. 
+   * Used to keep the CV clean of "Consider adding" comments.
+   */
+  falta_dato_fields: z.array(z.string()).default([]),
 });
 
 export type LLMOutput = z.infer<typeof LLMOutputSchema>;
@@ -115,7 +96,7 @@ export interface GenerateResponse {
 }
 
 // ============================================================
-// API Error Response — standardized format (SDD §11.1)
+// API Error Response — standardized format
 // ============================================================
 
 export interface APIErrorResponse {
