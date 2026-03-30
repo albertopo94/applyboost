@@ -8,7 +8,7 @@
     "title_2": "Ottieni più colloqui.",
     "subtitle": "Incolla un'offerta di lavoro. Ricevi un CV e una lettera di presentazione su misura in pochi secondi — ottimizzati per l'ATS e pronti da inviare.",
     "cta": "Ottimizza e Genera",
-    "trust": "I tuoi dati non vengono salvati in modo permanente senza permesso.",
+    "trust": "I tuoi datos non vengono salvati in modo permanente senza permesso.",
     "step1": "Carica il tuo attuale CV",
     "step2": "Incolla l'offerta di lavoro",
     "step3": "Ottieni subito una versione ottimizzata"
@@ -73,7 +73,9 @@
     "auth_consent": "Continuando, consenti ad ApplyBoost di accedere al tuo nome, email e foto del profilo per gestire la tua identità e i tuoi documenti.",
     "logging_in": "Connessione...",
     "missing_fields_title": "Dati mancanti rilevati",
-    "missing_fields_desc": "Abbiamo rilevato dei campi che richiedono la tua attenzione: {fields}. Puoi completarli direttamente nel testo evidenziato.",
+    "missing_fields_desc": "Abbiamo rilevato dei campi que richiedono la tua attenzione: {fields}. Puoi completarli direttamente nel testo evidenziato.",
+    "explanation_cv": "Perché questo curriculum funziona",
+    "explanation_cl": "Perché questa lettera funziona",
     "export": {
       "title": "Pannello di Esportazione",
       "subtitle": "Configura e scarica il tuo contenuto ottimizzato.",

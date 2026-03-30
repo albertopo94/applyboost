@@ -137,6 +137,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               cvExplanation={data.cv_explanation}
               clExplanation={data.cover_letter_explanation}
               showCL={hasCL}
+              t={t}
             />
           </div>
 

@@ -74,6 +74,8 @@
     "logging_in": "Connecting...",
     "missing_fields_title": "Missing data detected",
     "missing_fields_desc": "We've detected fields that require your attention: {fields}. You can complete them directly in the highlighted text.",
+    "explanation_cv": "Why this resume works",
+    "explanation_cl": "Why this cover letter works",
     "export": {
       "title": "Export Panel",
       "subtitle": "Configure and download your optimized content.",
