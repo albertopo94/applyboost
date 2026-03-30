@@ -20,7 +20,7 @@ export class GeminiKeyManager {
   private static consecutiveFailures = 0;
   private static lastFailureTime = 0;
   private static readonly CIRCUIT_BREAKER_THRESHOLD = 2;
-  private static readonly CIRCUIT_BREAKER_COOLDOWN = 300000; // 5 minutes
+  private static readonly CIRCUIT_BREAKER_COOLDOWN = 60000; // 1 minute
 
   /**
    * Returns all available Gemini API keys.
