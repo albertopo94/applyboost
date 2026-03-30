@@ -1,27 +1,27 @@
-import { GoogleGenerativeAI, Schema, Type } from "@google/generative-ai";
+import { GoogleGenerativeAI, Schema, SchemaType } from "@google/generative-ai";
 import { LLMRateLimitError, LLMTimeoutError, LLMProviderError } from "./types";
 
 const responseSchema: Schema = {
-  type: Type.OBJECT,
+  type: SchemaType.OBJECT,
   properties: {
-    cv_optimizado: { type: Type.STRING },
-    cv_explanation: { type: Type.STRING },
-    cover_letter: { type: Type.STRING },
-    cover_letter_explanation: { type: Type.STRING },
+    cv_optimizado: { type: SchemaType.STRING },
+    cv_explanation: { type: SchemaType.STRING },
+    cover_letter: { type: SchemaType.STRING },
+    cover_letter_explanation: { type: SchemaType.STRING },
     diff: {
-      type: Type.ARRAY,
+      type: SchemaType.ARRAY,
       items: {
-        type: Type.OBJECT,
+        type: SchemaType.OBJECT,
         properties: {
-          cambio: { type: Type.STRING },
-          motivo: { type: Type.STRING },
-          impacto: { type: Type.STRING }
+          cambio: { type: SchemaType.STRING },
+          motivo: { type: SchemaType.STRING },
+          impacto: { type: SchemaType.STRING }
         },
         required: ["cambio", "motivo", "impacto"]
       }
     },
-    keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-    falta_dato_fields: { type: Type.ARRAY, items: { type: Type.STRING } }
+    keywords: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+    falta_dato_fields: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
   },
   required: ["cv_optimizado", "diff", "keywords", "falta_dato_fields"]
 };
