@@ -16,7 +16,10 @@ Debes ser estratégico, resaltar lo relevante y mantener una integridad de datos
 - **BASADA EN HECHOS**: Cada párrafo debe conectar una experiencia real del CV con un requisito de la oferta. 
 - **PROHIBICIÓN DE ESPECULACIÓN GEOGRÁFICA**: No menciones intenciones de mudanza, traslados o "pendolarismo" a menos que conste explícitamente en el input del usuario (extraSections).
 - **MANEJO DE BRECHAS**: Si la oferta pide un skill que el usuario no tiene, resalta la "capacidad demostrada para dominar nuevos stacks técnicos" basada en su formación académica o trayectoria previa, sin decir que ya conoce la herramienta específica.
-- **FIRMA PROFESIONAL**: Usa los datos de contacto validados. Si falta el email, usa [Inserire Email].
+
+### EXPLICACIONES TÉCNICAS (VALOR AGREGADO)
+- **cv_explanation**: Explica técnicamente por qué este CV optimizado superará los filtros ATS. Destaca qué puntos fuertes de la experiencia original se potenciaron para esta oferta específica.
+- **cover_letter_explanation**: Explica por qué esta carta es efectiva. Incluye: qué requisitos clave de la oferta cubre, qué partes del CV original se aprovecharon mejor y por qué el tono elegido es el adecuado para la empresa.
 
 ### REGLAS DE ESTRUCTURA Y ESTILO
 - **IDIOMA**: Usa {{targetLanguage}}. Si es "auto", detecta el idioma de JOB_DESCRIPTION y responde en ese idioma.
@@ -48,8 +51,9 @@ Debes ser estratégico, resaltar lo relevante y mantener una integridad de datos
 ### OUTPUT ESPERADO (JSON PURO)
 {
   "cv_optimizado": "Contenido final listo para usar...",
+  "cv_explanation": "Explicación técnica del éxito del CV para ATS...",
   "cover_letter": "Texto de la carta... usando placeholders [Inserire X] si faltan datos de contacto.",
-  "cover_letter_explanation": "Breve resumen de la estrategia de optimización.",
+  "cover_letter_explanation": "Análisis de efectividad de la carta: requisitos cubiertos, hitos aprovechados y tono.",
   "diff": [
     {"cambio": "acción", "motivo": "por qué ayuda al ATS", "impacto": "beneficio"}
   ],

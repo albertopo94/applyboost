@@ -65,8 +65,9 @@ export const DiffItemSchema = z.object({
 
 export const LLMOutputSchema = z.object({
   cv_optimizado: z.string().min(10),
+  cv_explanation: z.string().optional(),
   cover_letter: z.string().min(10).max(5000).optional(),
-  cover_letter_explanation: z.union([z.string(), z.array(z.string())]).optional(),
+  cover_letter_explanation: z.string().optional(),
   diff: z.array(DiffItemSchema).min(1),
   keywords: z.array(z.string()).min(3).max(30),
   /**
@@ -86,6 +87,7 @@ export type DiffItem = z.infer<typeof DiffItemSchema>;
 export interface GenerateResponse {
   generation_id: string;
   cv_optimizado: string;
+  cv_explanation?: string;
   cover_letter?: string;
   cover_letter_explanation?: string;
   diff: DiffItem[];

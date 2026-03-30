@@ -6,6 +6,7 @@ import { TabSwitcher } from "./editor/TabSwitcher";
 import { AuditSidebar } from "./editor/AuditSidebar";
 import { HighlightedContent } from "./editor/HighlightedContent";
 import { ExportPanel } from "./editor/ExportPanel";
+import { ExplanationPanel } from "./editor/ExplanationPanel";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 
@@ -19,6 +20,7 @@ interface EditorPreviewProps {
   data: {
     generation_id: string;
     cv_optimizado: string;
+    cv_explanation?: string;
     cover_letter: string;
     cover_letter_explanation?: string;
     score_original: number;
@@ -89,7 +91,7 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
             </div>
 
             {/* Main Editor Container */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group h-full">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group">
               
               {/* FIXED STATUS HEADER - Anchored to the parent, not affected by scroll bounce */}
               <div className="absolute -top-px -left-px -right-px z-30 px-6 py-4 bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border-b border-gray-100/50 dark:border-slate-800/50 flex items-center justify-between rounded-t-3xl">
@@ -129,6 +131,13 @@ export default function EditorPreview({ data }: EditorPreviewProps) {
               {/* Bottom Gradient Fade to indicate scrollable content */}
               <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
             </div>
+
+            {/* WHY IT WORKS PANEL - Education & Trust Layer */}
+            <ExplanationPanel 
+              cvExplanation={data.cv_explanation}
+              clExplanation={data.cover_letter_explanation}
+              showCL={hasCL}
+            />
           </div>
 
           {/* Sidebar Area */}
