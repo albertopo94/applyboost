@@ -80,7 +80,7 @@ export default function SocialProofTicker({ initialStats }: SocialProofTickerPro
   }, [initialStats]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4 mt-10 mb-6 transition-opacity duration-500">
+    <div className="flex flex-col items-center justify-center gap-4 mt-8 mb-2 transition-opacity duration-500 w-full">
       <div 
         className={`flex items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400 ${
           isLoading ? "opacity-30 animate-pulse" : "opacity-100"
