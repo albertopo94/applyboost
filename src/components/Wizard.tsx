@@ -144,7 +144,7 @@ export default function Wizard({
       {/* Form Area */}
       <form 
         onSubmit={handleSubmit}
-        className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-md rounded-3xl border border-gray-200/50 dark:border-white/5 shadow-2xl shadow-indigo-500/5 dark:shadow-indigo-500/10 p-6 md:p-8 flex flex-col gap-8 ring-1 ring-slate-900/5 dark:ring-white/10 transition-all duration-300 hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20"
+        className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-md rounded-3xl border border-gray-200/50 dark:border-white/5 shadow-2xl shadow-blue-500/5 dark:shadow-blue-500/10 p-6 md:p-8 flex flex-col gap-8 ring-1 ring-slate-900/5 dark:ring-white/10 transition-all duration-300 hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20"
       >
         
         <CVInput 
@@ -178,7 +178,7 @@ export default function Wizard({
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full bg-gradient-to-b from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold tracking-tight py-3.5 px-6 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_rgba(255,255,255,0.2)] flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 active:scale-[0.98] duration-300"
+            className="w-full bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold tracking-tight py-3.5 px-6 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_rgba(255,255,255,0.2)] flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 active:scale-[0.98] duration-300"
           >
             {t("hero.cta")}
           </button>

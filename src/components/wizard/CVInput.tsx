@@ -55,13 +55,13 @@ export default function CVInput({ cvFile, cvText, onFileChange, onTextChange }: 
             }
           }}
           className={cn(
-            "border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 hover:shadow-sm dark:hover:bg-slate-900/40",
+            "border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 hover:shadow-sm dark:hover:bg-slate-900/40",
             cvFile 
-              ? "border-indigo-500/50 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10" 
-              : "border-gray-200 dark:border-white/10 hover:border-indigo-400 dark:hover:border-indigo-400/50 hover:bg-gray-50/50 dark:hover:bg-slate-800/30"
+              ? "border-blue-500/50 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-500/10" 
+              : "border-gray-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-400/50 hover:bg-gray-50/50 dark:hover:bg-slate-800/30"
           )}
         >
-          <UploadCloud className={cn("w-7 h-7 mb-2 transition-transform duration-300 group-hover:-translate-y-1", cvFile ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500")} aria-hidden="true" />
+          <UploadCloud className={cn("w-7 h-7 mb-2 transition-transform duration-300 group-hover:-translate-y-1", cvFile ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-slate-500")} aria-hidden="true" />
           <span className="text-[13px] font-semibold text-gray-700 dark:text-slate-300 text-center px-4">
             {cvFile ? cvFile.name : t("wizard.upload_cta")}
           </span>
@@ -72,7 +72,7 @@ export default function CVInput({ cvFile, cvText, onFileChange, onTextChange }: 
                 onFileChange(null);
                 if (fileInputRef.current) fileInputRef.current.value = "";
               }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded-full hover:scale-110 active:scale-95"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 rounded-full hover:scale-110 active:scale-95"
               title="Clear file"
               aria-label="Remove uploaded CV file"
             >
@@ -102,12 +102,12 @@ export default function CVInput({ cvFile, cvText, onFileChange, onTextChange }: 
             placeholder={t("wizard.cv_placeholder")}
             value={cvText}
             onChange={(e) => onTextChange(e.target.value)}
-            className="w-full h-[100px] resize-none bg-transparent dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border border-gray-200 dark:border-white/10 rounded-xl p-4 pr-10 text-[13px] text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            className="w-full h-[100px] resize-none bg-transparent dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border border-gray-200 dark:border-white/10 rounded-xl p-4 pr-10 text-[13px] text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
           />
           {cvText && (
             <button
               onClick={() => onTextChange("")}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 rounded-full hover:scale-110 active:scale-95"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 rounded-full hover:scale-110 active:scale-95"
               title="Clear text"
               aria-label="Clear inserted CV text"
             >

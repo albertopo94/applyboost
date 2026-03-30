@@ -9,7 +9,7 @@ export default function WizardHero() {
     <div className="flex flex-col space-y-6 text-center lg:text-left">
       <h1 className="text-4xl md:text-5xl lg:text-[54px] font-extrabold text-gray-900 dark:text-slate-50 tracking-tighter leading-[1.1]">
         {t("hero.title_1")}<br />
-        <span className="bg-gradient-to-br from-indigo-500 to-indigo-700 dark:from-indigo-400 dark:to-violet-500 bg-clip-text text-transparent">{t("hero.title_2")}</span>
+        <span className="bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">{t("hero.title_2")}</span>
       </h1>
       <p className="text-lg md:text-xl text-gray-500 dark:text-slate-400 leading-relaxed font-medium max-w-xl mx-auto lg:mx-0">
         {t("hero.subtitle")}
