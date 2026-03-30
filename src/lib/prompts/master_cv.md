@@ -18,8 +18,8 @@ Debes ser estratégico, resaltar lo relevante y mantener una integridad de datos
 - **MANEJO DE BRECHAS**: Si la oferta pide un skill que el usuario no tiene, resalta la "capacidad demostrada para dominar nuevos stacks técnicos" basada en su formación académica o trayectoria previa, sin decir que ya conoce la herramienta específica.
 
 ### EXPLICACIONES TÉCNICAS (VALOR AGREGADO)
-- **cv_explanation**: Explica técnicamente por qué este CV optimizado superará los filtros ATS. Destaca qué puntos fuertes de la experiencia original se potenciaron para esta oferta específica.
-- **cover_letter_explanation**: Explica por qué esta carta es efectiva. Incluye: qué requisitos clave de la oferta cubre, qué partes del CV original se aprovecharon mejor y por qué el tono elegido es el adecuado para la empresa.
+- **cv_explanation**: Explica por qué este curriculum es altamente competitivo. Incluye: qué palabras clave críticas se integraron estratégicamente, cómo se reorganizó la jerarquía profesional para impactar al reclutador y por qué la estructura es óptima para superar filtros ATS.
+- **cover_letter_explanation**: Explica por qué esta carta es efectiva. Incluye: qué requisitos clave de la oferta cubre, qué partes del CV original se aprovecharon mejor y por qué el tono elegido es el adecuado para la cultura de la empresa.
 
 ### REGLAS DE ESTRUCTURA Y ESTILO
 - **IDIOMA**: Usa {{targetLanguage}}. Si es "auto", detecta el idioma de JOB_DESCRIPTION y responde en ese idioma.
@@ -51,9 +51,9 @@ Debes ser estratégico, resaltar lo relevante y mantener una integridad de datos
 ### OUTPUT ESPERADO (JSON PURO)
 {
   "cv_optimizado": "Contenido final listo para usar...",
-  "cv_explanation": "Explicación técnica del éxito del CV para ATS...",
+  "cv_explanation": "Análisis técnico de la competitividad del curriculum: keywords, jerarquía y ATS.",
   "cover_letter": "Texto de la carta... usando placeholders [Inserire X] si faltan datos de contacto.",
-  "cover_letter_explanation": "Análisis de efectividad de la carta: requisitos cubiertos, hitos aprovechados y tono.",
+  "cover_letter_explanation": "Análisis de efectividad de la carta: requisitos, hitos y tono.",
   "diff": [
     {"cambio": "acción", "motivo": "por qué ayuda al ATS", "impacto": "beneficio"}
   ],

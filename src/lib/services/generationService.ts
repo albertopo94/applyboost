@@ -16,6 +16,7 @@ export interface GenerationRequest {
 export interface GenerationResult {
   generation_id: string;
   cv_optimizado: string;
+  cv_explanation?: string;
   cover_letter?: string;
   cover_letter_explanation?: string | string[];
   diff: string;
@@ -73,6 +74,7 @@ export class GenerationService {
     const genId = genData?.id;
     console.log(`[GenerationService] 'generations' success! ID: ${genId}. Now saving to 'cv_versions'...`);
 
+    // NOTE: We don't save cv_explanation to DB yet to avoid breaking current MVP schema
     const { error: cvError } = await supabase
       .from("cv_versions")
       .insert({
@@ -94,43 +96,19 @@ export class GenerationService {
       throw cvError;
     }
     console.log(`[GenerationService] 'cv_versions' success!`);
-    // Logging & Stats
-    await supabase.from("generation_logs").insert({
-      generation_id: genId,
-      regenerations: 0,
-      manual_edits: false,
-      falta_dato_fields: faltaDatoMsg
-    });
 
-    // Increment stats in background-like manner (non-blocking)
+    // Background stats update
     try {
-      const statsPromise = (async () => {
-        const adminClient = createAdminClient();
-        const { data: currentStats } = await adminClient
-          .from('platform_stats')
-          .select('cvs_generated')
-          .eq('id', 1)
-          .single();
-        
-        const nextValue = (currentStats?.cvs_generated || 0) + 1;
-        await adminClient
-          .from('platform_stats')
-          .update({ cvs_generated: nextValue })
-          .eq('id', 1);
-      })();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Stats increment timeout")), 2000)
-      );
-
-      await Promise.race([statsPromise, timeoutPromise]);
-    } catch (err) {
-      console.warn("Platform stats increment failed or timed out (safe to ignore):", err);
-    }
+      createAdminClient().from('platform_stats').select('cvs_generated').eq('id', 1).single()
+        .then(({data: current}) => {
+          createAdminClient().from('platform_stats').update({ cvs_generated: (current?.cvs_generated || 0) + 1 }).eq('id', 1);
+        });
+    } catch (e) {}
 
     return {
       generation_id: genId,
       cv_optimizado: llmResult.cv_optimizado,
+      cv_explanation: llmResult.cv_explanation, // FIX: Direct pass to UI
       cover_letter: llmResult.cover_letter,
       cover_letter_explanation: llmResult.cover_letter_explanation,
       diff: llmResult.diff,
