@@ -15,7 +15,7 @@
   },
   "wizard": {
     "step1_title": "Tu Currículum",
-    "upload_cta": "Subir PDF, DOCX o Imagen",
+    "upload_cta": "Subir PDF o Imagen",
     "error_file_too_large": "El archivo es demasiado grande (máximo 5MB).",
     "error_invalid_cv": "El archivo subido no parece ser un CV válido. Por favor, subí tu currículum, perfil profesional o portfolio.",
     "or_paste": "O pega el texto",
