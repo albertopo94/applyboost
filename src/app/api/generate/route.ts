@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OptimizeCVUseCase } from "@/lib/use-cases/OptimizeCVUseCase";
 
-export const maxDuration = 180; // Ensure enough time for the stream
+export const maxDuration = 300; // Ensure enough time for the stream
 
 /**
  * API: /api/generate (Streaming Version)

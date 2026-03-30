@@ -15,6 +15,14 @@ export class GeminiKeyManager {
   private static cooldowns: Map<number, number> = new Map();
 
   /**
+   * Circuit Breaker State
+   */
+  private static consecutiveFailures = 0;
+  private static lastFailureTime = 0;
+  private static readonly CIRCUIT_BREAKER_THRESHOLD = 2;
+  private static readonly CIRCUIT_BREAKER_COOLDOWN = 300000; // 5 minutes
+
+  /**
    * Returns all available Gemini API keys.
    * Parses the environment variables on the first call and caches the result.
    */
@@ -87,6 +95,58 @@ export class GeminiKeyManager {
     if (now >= expiration) {
       // Cooldown expired, clean up and return true
       this.cooldowns.delete(index);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * HEALTH MANAGEMENT (Circuit Breaker)
+   */
+
+  /**
+   * Reports a failure of the service.
+   * If consecutive failures reach the threshold, the service is marked as unhealthy.
+   */
+  static reportFailure(): void {
+    const now = Date.now();
+    
+    // If last failure was more than 10 minutes ago, reset the counter
+    if (now - this.lastFailureTime > 600000) {
+      this.consecutiveFailures = 1;
+    } else {
+      this.consecutiveFailures++;
+    }
+    
+    this.lastFailureTime = now;
+    
+    if (this.consecutiveFailures >= this.CIRCUIT_BREAKER_THRESHOLD) {
+      console.warn(`[GEMINI_CIRCUIT_BREAKER] Service marked as UNHEALTHY due to ${this.consecutiveFailures} consecutive failures.`);
+    }
+  }
+
+  /**
+   * Resets the consecutive failures counter.
+   * Call this after any successful request to the service.
+   */
+  static resetHealth(): void {
+    this.consecutiveFailures = 0;
+  }
+
+  /**
+   * Returns true if the service is considered healthy.
+   * A service is unhealthy if it's currently in a circuit breaker cooldown.
+   */
+  static isHealthy(): boolean {
+    if (this.consecutiveFailures < this.CIRCUIT_BREAKER_THRESHOLD) {
+      return true;
+    }
+
+    const now = Date.now();
+    if (now - this.lastFailureTime >= this.CIRCUIT_BREAKER_COOLDOWN) {
+      // Cooldown period passed, we allow a retry
+      this.resetHealth();
       return true;
     }
 

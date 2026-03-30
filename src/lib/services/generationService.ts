@@ -11,6 +11,7 @@ export interface GenerationRequest {
   outputLanguage: "es" | "en" | "it";
   prompt: string;
   excludeGeminiIndex?: number;
+  forceFallback?: boolean;
 }
 
 export interface GenerationResult {
@@ -34,10 +35,20 @@ export class GenerationService {
    * Orchestrates LLM call and stores results in the database.
    */
   static async generateAndStore(params: GenerationRequest): Promise<GenerationResult> {
-    const { userId, anonymousId, cvText, jobText, jobUrl, outputLanguage, prompt, excludeGeminiIndex } = params;
+    const { 
+      userId, 
+      anonymousId, 
+      cvText, 
+      jobText, 
+      jobUrl, 
+      outputLanguage, 
+      prompt, 
+      excludeGeminiIndex,
+      forceFallback
+    } = params;
 
     // 1. LLM Orchestration
-    const llmResult = await callLLM(prompt, excludeGeminiIndex, cvText);
+    const llmResult = await callLLM(prompt, excludeGeminiIndex, cvText, forceFallback);
 
     // 2. Calculations
     const scoreOriginal = calculateATSScore(cvText, llmResult.keywords);

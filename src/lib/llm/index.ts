@@ -34,12 +34,20 @@ function getProviderOrder(): string[] {
 export async function callLLM(
   prompt: string, 
   excludeGeminiIndex?: number,
-  originalCV?: string
+  originalCV?: string,
+  forceFallback?: boolean
 ): Promise<LLMOutput> {
   const providerOrder = getProviderOrder();
   const errors: string[] = [];
 
   for (const providerName of providerOrder) {
+    // TACTICAL FALLBACK: If we're under time pressure or Gemini is unhealthy,
+    // we skip Gemini and go straight to the next provider (Groq).
+    if (forceFallback && providerName === "gemini") {
+      console.warn(`[LLM] 🚨 [GEMINI] Omitido por estrategia de pánico (forceFallback).`);
+      continue;
+    }
+
     const provider = PROVIDER_REGISTRY[providerName]();
 
     try {

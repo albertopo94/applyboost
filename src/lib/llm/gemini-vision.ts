@@ -128,6 +128,9 @@ export class GeminiVisionService {
         const parsedResult = JSON.parse(textResponse);
         console.log(`[OCR_SUCCESS][${requestId}][Key #${i}] Extraction completed.`);
 
+        // Any success resets the global health counter
+        GeminiKeyManager.resetHealth();
+
         return {
           ...parsedResult,
           usedKeyIndex: i // We return the index so the chat engine can exclude it
@@ -138,6 +141,10 @@ export class GeminiVisionService {
         
         if (error.name === "AbortError") {
           console.warn(`[OCR_TIMEOUT][${requestId}][Key #${i}] Gemini API took too long. Trying next key...`);
+          
+          // Report failure to the global circuit breaker
+          GeminiKeyManager.reportFailure();
+          
           GeminiKeyManager.markAsExhausted(i, 10000); // 10s cooldown for timeout
           continue; // ROTATE TO NEXT KEY instead of throwing
         }

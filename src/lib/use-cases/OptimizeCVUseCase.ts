@@ -3,6 +3,7 @@ import { GenerationService } from "@/lib/services/generationService";
 import { requireAuth } from "@/lib/auth/auth-utils";
 import { UsageService } from "@/lib/services/usageService";
 import { GenerateResponse } from "@/lib/llm/types";
+import { GeminiKeyManager } from "@/lib/llm/gemini-key-manager";
 
 export interface OptimizeCVRequest {
   cvFile?: File | null;
@@ -17,7 +18,7 @@ export interface OptimizeCVRequest {
 
 /**
  * OptimizeCVUseCase: Orquestra el flujo completo de optimización.
- * Incluye un timeout global de 100 segundos para evitar la "muerte eterna" del usuario.
+ * Incluye un timeout global de 300 segundos para dar aire a los procesos pesados.
  */
 export class OptimizeCVUseCase {
   async execute(request: OptimizeCVRequest): Promise<GenerateResponse> {
@@ -32,8 +33,10 @@ export class OptimizeCVUseCase {
       requestId = "UC-" + Math.random().toString(36).substring(7)
     } = request;
 
-    // --- GLOBAL TIMEOUT (180 SECONDS) ---
-    const globalTimeoutMs = 180000;
+    // --- GLOBAL TIMEOUT (300 SECONDS) ---
+    const globalTimeoutMs = 300000;
+    const startTime = Date.now();
+    
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error("GLOBAL_TIMEOUT")), globalTimeoutMs);
     });
@@ -58,6 +61,12 @@ export class OptimizeCVUseCase {
       let usedKeyIndex: number | undefined = undefined;
       
       if (cvFile && cvFile.size > 0 && !cvText) {
+        // --- CIRCUIT BREAKER CHECK ---
+        if (!GeminiKeyManager.isHealthy()) {
+          console.error(`[OCR_SERVICE_DOWN][${requestId}] Gemini is unhealthy. Aborting Stage 1.`);
+          throw new Error("OCR_SERVICE_DOWN");
+        }
+
         try {
           const buffer = Buffer.from(await cvFile.arrayBuffer());
           const parseResult = await parseCV(buffer, cvFile.type, requestId);
@@ -85,6 +94,20 @@ export class OptimizeCVUseCase {
       // --- STEP 4: LLM GENERATION ---
       if (onProgress) await onProgress(4);
       
+      // --- INTELLIGENT ROUTING DECISION ---
+      const timeElapsed = (Date.now() - startTime) / 1000;
+      const remainingTime = (globalTimeoutMs / 1000) - timeElapsed;
+      const isUnhealthy = !GeminiKeyManager.isHealthy();
+      
+      // We force fallback to Groq if:
+      // 1. Google is currently marked as UNHEALTHY (Circuit Breaker)
+      // 2. We have less than 40s remaining (Time pressure safety)
+      const forceFallback = isUnhealthy || remainingTime < 40;
+
+      if (forceFallback) {
+        console.warn(`[INTELLIGENT_FALLBACK][${requestId}] Forcing Groq fallback. Reason: ${isUnhealthy ? "UNHEALTHY" : "LOW_TIME (" + remainingTime.toFixed(1) + "s left)"}`);
+      }
+      
       const result = await GenerationService.generateAndStore({
         userId: userId || undefined,
         anonymousId: !userId ? anonymousId : undefined,
@@ -94,6 +117,7 @@ export class OptimizeCVUseCase {
         outputLanguage: outputLanguage === "auto" ? "es" : outputLanguage, // Default to es if prompt fails detection
         prompt,
         excludeGeminiIndex: usedKeyIndex,
+        forceFallback, // We need to pass this to the service
       });
 
       // --- STEP 5: FINALIZING ---

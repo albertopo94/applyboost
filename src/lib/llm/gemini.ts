@@ -1,5 +1,5 @@
 import type { AIService } from "./types";
-import { LLMRateLimitError, LLMProviderError } from "./types";
+import { LLMRateLimitError, LLMProviderError, LLMTimeoutError } from "./types";
 import { GeminiKeyManager } from "./gemini-key-manager";
 import { GeminiClient } from "./gemini-client";
 
@@ -30,7 +30,12 @@ export class GeminiService implements AIService {
       const client = new GeminiClient(apiKey);
 
       try {
-        return await client.chat(prompt, signal);
+        const result = await client.chat(prompt, signal);
+        
+        // Success resets global health
+        GeminiKeyManager.resetHealth();
+        
+        return result;
       } catch (error: any) {
         lastError = error;
         
@@ -39,6 +44,16 @@ export class GeminiService implements AIService {
           // Gemini specifically needs cooldowns for 429
           GeminiKeyManager.markAsExhausted(i, 60000); 
           continue; 
+        }
+
+        if (error instanceof LLMTimeoutError) {
+          console.warn(`[GEMINI_ROTATION][Key #${i}] Gemini Chat took too long. Rotating...`);
+          
+          // Report failure to the global circuit breaker
+          GeminiKeyManager.reportFailure();
+          
+          GeminiKeyManager.markAsExhausted(i, 10000); // 10s cooldown for timeout
+          continue; // ROTATE TO NEXT KEY instead of throwing immediately
         }
         
         // If it's a fatal error or other fallbackable error, let's propagate 
