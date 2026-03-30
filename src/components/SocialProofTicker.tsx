@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/db/supabase-browser";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Linkedin } from "lucide-react";
 
 interface PlatformStats {
   page_views: number;
@@ -79,22 +80,37 @@ export default function SocialProofTicker({ initialStats }: SocialProofTickerPro
   }, [initialStats]);
 
   return (
-    <div 
-      className={`flex items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400 mt-10 mb-2 transition-opacity duration-500 ${
-        isLoading ? "opacity-30 animate-pulse" : "opacity-100"
-      }`}
-    >
-      <span>
-        {t('stats.views')}: <span className="font-mono">{stats.page_views.toLocaleString()}</span>
-      </span>
-      <span>•</span>
-      <span>
-        {t('stats.generated')}: <span className="font-mono">{stats.cvs_generated.toLocaleString()}</span>
-      </span>
-      <span>•</span>
-      <span>
-        {t('stats.downloaded')}: <span className="font-mono">{stats.cvs_downloaded.toLocaleString()}</span>
-      </span>
+    <div className="flex flex-col items-center justify-center gap-4 mt-10 mb-6 transition-opacity duration-500">
+      <div 
+        className={`flex items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400 ${
+          isLoading ? "opacity-30 animate-pulse" : "opacity-100"
+        }`}
+      >
+        <span>
+          {t('stats.views')}: <span className="font-mono">{stats.page_views.toLocaleString()}</span>
+        </span>
+        <span>•</span>
+        <span>
+          {t('stats.generated')}: <span className="font-mono">{stats.cvs_generated.toLocaleString()}</span>
+        </span>
+        <span>•</span>
+        <span>
+          {t('stats.downloaded')}: <span className="font-mono">{stats.cvs_downloaded.toLocaleString()}</span>
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+        <span>Siendo construido por</span>
+        <a 
+          href="https://www.linkedin.com/in/alberto-perez-ojeda" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 hover:underline decoration-blue-500 underline-offset-4"
+        >
+          <Linkedin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-500" />
+          <span className="font-semibold">Albert</span>
+        </a>
+      </div>
     </div>
   );
 }
