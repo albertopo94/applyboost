@@ -9,10 +9,18 @@ import CVInput from "./wizard/CVInput";
 import JobInput from "./wizard/JobInput";
 
 interface WizardProps {
+  remainingUses?: number;
+  isAnonymous?: boolean;
+  onOpenAuth?: (mode: 'default' | 'limit_reached') => void;
   onComplete: (data: any) => void;
 }
 
-export default function Wizard({ onComplete }: WizardProps) {
+export default function Wizard({ 
+  remainingUses = 3, 
+  isAnonymous = true, 
+  onOpenAuth,
+  onComplete 
+}: WizardProps) {
   const { t } = useLanguage();
 
   // --- Global State ---
@@ -40,6 +48,16 @@ export default function Wizard({ onComplete }: WizardProps) {
   const handleSubmit = async () => {
     setError("");
     
+    // Check quota before submitting
+    if (isAnonymous && remainingUses <= 0) {
+      if (onOpenAuth) {
+        onOpenAuth('limit_reached');
+      } else {
+        setError(t("errors.limit_reached"));
+      }
+      return;
+    }
+
     // Local Validation
     if (!cvFile && !cvText.trim()) {
       setError(t("wizard.error_cv"));
@@ -97,16 +115,8 @@ export default function Wizard({ onComplete }: WizardProps) {
               return;
             } else if (message.type === "error") {
               clearTimeout(timeoutId);
-              if (message.error?.code === "LIMIT_REACHED" || message.status === 401) {
-                setError("Has alcanzado el límite de 3 generaciones gratuitas. ¡Loguéate con Google para guardar tus documentos y seguir!");
-              } else if (message.error?.code === "INVALID_CV_CONTENT") {
-                setError(t("wizard.error_invalid_cv") || "El archivo no parece ser un CV válido.");
-              } else if (message.error?.code === "SCRAPER_BLOCKED") {
-                setError(t("wizard.error_scraper_blocked") || message.error.message);
-                setTimeout(() => jobTextRef.current?.focus(), 100);
-              } else {
-                setError(message.error?.message || "Error en la generación");
-              }
+              const errorCode = message.error?.code || "internal_error";
+              setError(t(`errors.${errorCode}`) || t("errors.internal_error"));
               setIsUploading(false);
               return;
             }

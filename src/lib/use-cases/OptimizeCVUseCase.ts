@@ -32,8 +32,8 @@ export class OptimizeCVUseCase {
       requestId = "UC-" + Math.random().toString(36).substring(7)
     } = request;
 
-    // --- GLOBAL TIMEOUT (100 SECONDS) ---
-    const globalTimeoutMs = 100000;
+    // --- GLOBAL TIMEOUT (180 SECONDS) ---
+    const globalTimeoutMs = 180000;
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error("GLOBAL_TIMEOUT")), globalTimeoutMs);
     });

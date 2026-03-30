@@ -24,10 +24,16 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   const [generationData, setGenerationData] = useState<any>(null);
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'default' | 'limit_reached'>('default');
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [quotaUsage, setQuotaUsage] = useState(0);
   
   const supabase = createClient();
+
+  const handleOpenAuthModal = (mode: 'default' | 'limit_reached' = 'default') => {
+    setAuthModalMode(mode);
+    setShowAuthModal(true);
+  };
 
   const fetchQuota = async () => {
     try {
@@ -97,7 +103,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
         <Header 
           step={step} 
           setStep={setStep} 
-          onOpenAuth={() => setShowAuthModal(true)} 
+          onOpenAuth={() => handleOpenAuthModal('default')} 
         />
 
         {isAnonymous && (
@@ -109,11 +115,16 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
 
         <div className="p-6 sm:p-10 md:p-14">
           {step === "WIZARD" ? (
-            <Wizard onComplete={(data: any) => {
-              setGenerationData(data);
-              setStep("RESULT");
-              fetchQuota(); // Refresh quota after generation
-            }} />
+            <Wizard 
+              remainingUses={remainingUses}
+              isAnonymous={isAnonymous}
+              onOpenAuth={handleOpenAuthModal}
+              onComplete={(data: any) => {
+                setGenerationData(data);
+                setStep("RESULT");
+                fetchQuota(); // Refresh quota after generation
+              }} 
+            />
           ) : (
              <EditorPreview data={generationData} />
           )}
@@ -124,6 +135,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       {/* RENDERED OUTSIDE THE OVERFLOW-HIDDEN CONTAINER */}
       <AuthModal 
         isOpen={showAuthModal}
+        mode={authModalMode}
         onClose={() => setShowAuthModal(false)}
         onConfirm={handleGoogleLogin}
         isRedirecting={isRedirecting}

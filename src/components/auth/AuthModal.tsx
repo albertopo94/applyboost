@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import UserIcon from "lucide-react/dist/esm/icons/user";
+import Sparkles from "lucide-react/dist/esm/icons/sparkles";
 import Info from "lucide-react/dist/esm/icons/info";
 import X from "lucide-react/dist/esm/icons/x";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,10 +12,13 @@ interface AuthModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isRedirecting: boolean;
+  mode?: 'default' | 'limit_reached';
 }
 
-export function AuthModal({ isOpen, onClose, onConfirm, isRedirecting }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onConfirm, isRedirecting, mode = 'default' }: AuthModalProps) {
   const { t } = useLanguage();
+
+  const isLimitReached = mode === 'limit_reached';
 
   return (
     <AnimatePresence>
@@ -38,14 +42,22 @@ export function AuthModal({ isOpen, onClose, onConfirm, isRedirecting }: AuthMod
           >
             {/* Header / Brand */}
             <div className="px-8 pt-12 pb-6 text-center">
-              <div className="mx-auto w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 rotate-3">
-                <UserIcon className="w-8 h-8 text-white -rotate-3" />
+              <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-lg rotate-3 ${
+                isLimitReached 
+                  ? "bg-amber-500 shadow-amber-500/20" 
+                  : "bg-blue-600 shadow-blue-500/20"
+              }`}>
+                {isLimitReached ? (
+                  <Sparkles className="w-8 h-8 text-white -rotate-3" />
+                ) : (
+                  <UserIcon className="w-8 h-8 text-white -rotate-3" />
+                )}
               </div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                ApplyBoost Identity
+                {isLimitReached ? t('editor.auth_modal_limit_title') : t('editor.auth_modal_title')}
               </h3>
               <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                Regístrate o inicia sesión para optimizar y generar CVs + CL sin limites.
+                {isLimitReached ? t('editor.auth_modal_limit_description') : t('editor.auth_modal_description')}
               </p>
             </div>
 

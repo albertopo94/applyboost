@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OptimizeCVUseCase } from "@/lib/use-cases/OptimizeCVUseCase";
 
-export const maxDuration = 120; // Ensure enough time for the stream
+export const maxDuration = 180; // Ensure enough time for the stream
 
 /**
  * API: /api/generate (Streaming Version)
@@ -63,18 +63,22 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       console.error(`[API_GENERATE][${requestId}] Use Case Error:`, error);
       
-      // Map domain errors to HTTP responses
+      // Map domain errors to dictionary keys (i18n ready)
       const errorMap: Record<string, { code: string; status: number }> = {
-        "QUOTA_EXCEEDED": { code: "LIMIT_REACHED", status: 401 },
-        "CV_CONTENT_MISSING": { code: "BAD_REQUEST", status: 400 },
-        "INVALID_CV_CONTENT": { code: "INVALID_CV_CONTENT", status: 422 },
+        "QUOTA_EXCEEDED": { code: "limit_reached", status: 401 },
+        "CV_CONTENT_MISSING": { code: "bad_request", status: 400 },
+        "INVALID_CV_CONTENT": { code: "unprocessable_entity", status: 422 },
+        "GLOBAL_TIMEOUT": { code: "gateway_timeout", status: 504 },
+        "OCR_FAILED_TIMEOUT": { code: "service_unavailable", status: 503 },
+        "OCR_FAILED_QUOTA": { code: "too_many_requests", status: 429 },
+        "CV_PARSE_ERROR": { code: "unprocessable_entity", status: 422 }
       };
 
-      const mapped = errorMap[error.message] || { code: "INTERNAL_ERROR", status: 500 };
+      const errorKey = Object.keys(errorMap).find(k => error.message.includes(k)) || "internal_error";
+      const mapped = errorMap[errorKey] || { code: "internal_error", status: 500 };
 
       await sendError({ 
         code: mapped.code, 
-        message: error.message, 
         request_id: requestId 
       }, mapped.status);
     }

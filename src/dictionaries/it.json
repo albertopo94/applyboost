@@ -71,6 +71,10 @@
     "limit_subtitle": "Registrati per continuare l'ottimizzazione",
     "login_to_continue": "Accedi per continuare",
     "auth_consent": "Continuando, consenti ad ApplyBoost di accedere al tuo nome, email e foto del profilo per gestire la tua identità e i tuoi documenti.",
+    "auth_modal_title": "Identità ApplyBoost",
+    "auth_modal_description": "Registrati o accedi per ottimizzare e generare CV e lettere di presentazione senza limiti.",
+    "auth_modal_limit_title": "Limite raggiunto!",
+    "auth_modal_limit_description": "Hai esaurito le tue 3 ottimizzazioni gratuite. Registrati con Google per ottenere ottimizzazioni illimitate.",
     "logging_in": "Connessione...",
     "missing_fields_title": "Dati mancanti rilevati",
     "missing_fields_desc": "Abbiamo rilevato dei campi que richiedono la tua attenzione: {fields}. Puoi completarli direttamente nel testo evidenziato.",
@@ -106,5 +110,14 @@
     "views": "Visite",
     "generated": "Generati",
     "downloaded": "Scaricati"
+  },
+  "errors": {
+    "limit_reached": "Hai raggiunto il limite di 3 generazioni gratuite. Accedi con Google per salvare i tuoi documenti e continuare!",
+    "gateway_timeout": "Il server di Google sta impiegando troppo tempo per rispondere. Riprova tra qualche istante.",
+    "service_unavailable": "Il servicio è attualmente sovraccarico. Attendi qualche secondo e riprova.",
+    "too_many_requests": "Abbiamo temporaneamente superato la capacità del server. Attendi un minuto e riprova.",
+    "unprocessable_entity": "Non siamo riusciti a elaborare correttamente il tuo CV. Assicurati che il file non sia danneggiato o protetto.",
+    "bad_request": "Mancano informazioni necessarie per elaborare la tua richiesta.",
+    "internal_error": "Si è verificato un problema imprevisto. Riprova."
   }
 }

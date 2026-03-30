@@ -68,7 +68,7 @@ export class GeminiVisionService {
       const timeoutId = setTimeout(() => {
         console.error(`[OCR_TIMEOUT][${requestId}][Key #${i}] Gemini API took too long. Aborting.`);
         controller.abort();
-      }, 55000);
+      }, 90000); // 90 seconds per key attempt
 
       try {
         if (i > 0) {
@@ -139,7 +139,7 @@ export class GeminiVisionService {
         // If it's a timeout or structural error, we don't necessarily want to rotate 
         // (unless it's a 429 inside the fetch catch, which is rare for native fetch)
         if (error.name === "AbortError") {
-          throw new Error("OCR_FAILED_TIMEOUT: El procesamiento del archivo tardó demasiado tiempo.");
+          throw new Error("OCR_FAILED_TIMEOUT");
         }
 
         // If we have more keys and it's a 429 or network glitch, we could continue,
@@ -152,9 +152,9 @@ export class GeminiVisionService {
     }
 
     if (keysAttempted === 0) {
-      throw new Error("OCR_FAILED_QUOTA: Todas las llaves de Gemini están en enfriamiento (cooldown).");
+      throw new Error("OCR_FAILED_QUOTA");
     }
 
-    throw new Error("OCR_FAILED_QUOTA: Todas las llaves de Gemini han agotado su cuota (Rate Limit).");
+    throw new Error("OCR_FAILED_QUOTA");
   }
 }
