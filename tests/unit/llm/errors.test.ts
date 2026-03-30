@@ -30,8 +30,8 @@ describe("LLM Error Hierarchy", () => {
 
   it("should wrap original errors in ProviderError", () => {
     const original = new Error("Something went wrong");
-    const error = new LLMProviderError("openrouter", original.message, original);
-    expect(error.provider).toBe("openrouter");
+    const error = new LLMProviderError("groq", original.message, original);
+    expect(error.provider).toBe("groq");
     expect(error.originalError).toBe(original);
   });
 });

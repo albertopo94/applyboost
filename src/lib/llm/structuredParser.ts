@@ -2,7 +2,6 @@ import type { AIService, CVDataObject } from "./types";
 import { GroqService } from "./groq";
 import { CerebrasService } from "./cerebras";
 import { GeminiService } from "./gemini";
-import { OpenRouterService } from "./openrouter";
 import { loadPrompt } from "../prompt/loader";
 
 /** Registry of all available provider constructors for this task */
@@ -10,11 +9,10 @@ const PROVIDER_REGISTRY: Record<string, () => AIService> = {
   groq: () => new GroqService(),
   cerebras: () => new CerebrasService(),
   gemini: () => new GeminiService(),
-  openrouter: () => new OpenRouterService(),
 };
 
 function getProviderOrder(): string[] {
-  const order = process.env.LLM_PROVIDER_ORDER ?? "groq,cerebras,gemini,openrouter";
+  const order = process.env.LLM_PROVIDER_ORDER ?? "groq,cerebras,gemini";
   return order
     .split(",")
     .map((p) => p.trim().toLowerCase())

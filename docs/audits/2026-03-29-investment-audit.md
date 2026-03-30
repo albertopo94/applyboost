@@ -51,7 +51,7 @@ La arquitectura demuestra un nivel de "Engineering Maturity" que justifica la in
 *   **Backend Híbrido:** Generación de documentos on-the-fly con Puppeteer (Server) acoplado a un motor de plantillas dinámicas.
 
 ### Fortalezas de Ingeniería Críticas
-*   **Orquestador de LLMs (Round-Robin Fallback):** El corazón del sistema en `src/lib/llm/index.ts`. Si un proveedor se cae (ej. Groq tira un 429), el sistema hace fallback automático e invisible a Cerebras, luego a Gemini, y finalmente a OpenRouter. Esto garantiza 99.9% de uptime en la generación de texto sin pagar licencias empresariales obscenas.
+*   **Orquestador de LLMs (Priority Fallback):** El corazón del sistema en `src/lib/llm/index.ts`. Si un proveedor se cae (ej. Gemini tira un 429), el sistema hace fallback automático e invisible a Groq y luego a Cerebras. Esto garantiza una alta disponibilidad en la generación de texto sin depender de un solo proveedor comercial.
 *   **Rotación de API Keys (Gemini):** Implementado un `GeminiKeyManager` que maneja un pool de claves (cooldown, rotación por rate-limit) para saltarse las restricciones de cuota gratuita, demostrando mentalidad de "Bootstrapper" eficiente para maximizar márgenes de ganancia temprana.
 *   **Generación de Documentos Píxel-Perfect:** El motor `pdfGenerator.ts` utiliza Puppeteer para garantizar que el PDF final sea idéntico a lo que el usuario aprobó en la web, procesando HTML a PDF de manera estricta.
 *   **Arquitectura de Datos Segura:** Sincronización automática de usuarios (`auth.users` -> `public.users`) mediante Triggers de Postgres, manteniendo las políticas de RLS cerradas y los créditos controlados transaccionalmente (`user_exports`).
