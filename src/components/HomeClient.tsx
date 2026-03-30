@@ -22,11 +22,11 @@ interface HomeClientProps {
 export default function HomeClient({ initialStats }: HomeClientProps) {
   const [step, setStep] = useState<"WIZARD" | "RESULT">("WIZARD");
   const [generationData, setGenerationData] = useState<any>(null);
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'default' | 'limit_reached'>('default');
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [quotaUsage, setQuotaUsage] = useState(0);
+  const [quotaUsage, setQuotaUsage] = useState<number | null>(null);
   
   const supabase = createClient();
 
@@ -40,7 +40,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       const res = await fetch("/api/auth/quota");
       if (res.ok) {
         const data = await res.json();
-        setQuotaUsage(data.usage_count || 0);
+        setQuotaUsage(data.usage_count);
       }
     } catch (err) {
       console.error("Error fetching quota:", err);
@@ -59,6 +59,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
         fetchQuota(); // Fetch initial quota
       } catch (err) {
         console.error("Auth check error:", err);
+        setIsAnonymous(true); // Fallback to anonymous on error
       }
     };
     checkUser();
@@ -90,8 +91,11 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
     }
   };
 
-  // Remaining uses: either from generationData (just generated) or from the persistent quotaUsage
-  const currentUsage = generationData?.usage_count !== undefined ? generationData.usage_count : quotaUsage;
+  // Remaining uses logic
+  const currentUsage = generationData?.usage_count !== undefined 
+    ? generationData.usage_count 
+    : (quotaUsage ?? 0);
+
   const remainingUses = generationData?.free_uses_remaining !== undefined 
     ? generationData.free_uses_remaining 
     : (3 - currentUsage);
@@ -106,7 +110,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           onOpenAuth={() => handleOpenAuthModal('default')} 
         />
 
-        {isAnonymous && (
+        {isAnonymous === true && (
           <QuotaBanner 
             remainingUses={remainingUses} 
             isAnonymous={isAnonymous} 
@@ -117,7 +121,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           {step === "WIZARD" ? (
             <Wizard 
               remainingUses={remainingUses}
-              isAnonymous={isAnonymous}
+              isAnonymous={isAnonymous ?? true}
               onOpenAuth={handleOpenAuthModal}
               onComplete={(data: any) => {
                 setGenerationData(data);

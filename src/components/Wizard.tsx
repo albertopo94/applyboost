@@ -47,6 +47,7 @@ export default function Wizard({
 
   const handleSubmit = async () => {
     setError("");
+    console.log("[WIZARD] handleSubmit. isAnonymous:", isAnonymous, "remainingUses:", remainingUses);
     
     // Check quota before submitting
     if (isAnonymous && remainingUses <= 0) {
@@ -71,7 +72,7 @@ export default function Wizard({
     setIsUploading(true);
     setCurrentStep(0);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds timeout
+    const timeoutId = setTimeout(() => controller.abort(), 200000); // 200 seconds timeout
 
     try {
       const formData = new FormData();
