@@ -99,7 +99,17 @@ export class OptimizeCVUseCase {
       // --- STEP 5: FINALIZING ---
       if (onProgress) await onProgress(5);
       
-      return result;
+      // Track usage for anonymous users
+      let updatedUsage = undefined;
+      if (!user && anonymousId) {
+        updatedUsage = await UsageService.trackAnonymousUsage(anonymousId);
+      }
+
+      return {
+        ...result,
+        usage_count: updatedUsage,
+        free_uses_remaining: updatedUsage !== undefined ? Math.max(0, 3 - updatedUsage) : undefined
+      };
     })();
 
     return Promise.race([workPromise, timeoutPromise]);
