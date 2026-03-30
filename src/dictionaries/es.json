@@ -70,7 +70,7 @@
     "limit_title": "Limite alcanzado",
     "limit_subtitle": "Regístrate para continuar optimizando",
     "login_to_continue": "Inicia sesión para continuar",
-    "auth_consent": "Al continuar, permites que ApplyBoost acceda a tu nombre, email y foto de perfil para gestionar tu identidad y documentos.",
+    "auth_consent": "Al continuar, permites que ApplyBoost acceda a tu nombre, email y foto de perfil para gestionar tu identidad.",
     "auth_modal_title": "Identidad ApplyBoost",
     "auth_modal_description": "Regístrate o inicia sesión para optimizar y generar CVs + CL sin límites.",
     "auth_modal_limit_title": "¡Límite alcanzado!",
