@@ -117,7 +117,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
           />
         )}
 
-        <div className="px-6 sm:px-10 md:px-14 pt-6 sm:pt-10 md:pt-14 pb-4 sm:pb-6 md:pb-8">
+        <div className="px-6 sm:px-10 md:px-14 pt-6 sm:pt-10 md:pt-14 pb-2 sm:pb-4 md:pb-6">
           {step === "WIZARD" ? (
             <Wizard 
               remainingUses={remainingUses}
