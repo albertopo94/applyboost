@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Wizard from "@/components/Wizard";
-import EditorPreview from "@/components/EditorPreview";
 import { Header } from "@/components/layout/Header";
 import { QuotaBanner } from "@/components/layout/QuotaBanner";
 import SocialProofTicker from "@/components/SocialProofTicker";
 import { createClient } from "@/lib/db/supabase-browser";
 import { AuthModal } from "@/components/auth/AuthModal";
+
+const EditorPreview = dynamic(() => import("@/components/EditorPreview"), {
+  loading: () => <div className="p-14 text-center text-slate-500 font-mono animate-pulse w-full">Iniciando editor...</div>
+});
 
 interface PlatformStats {
   page_views: number;
@@ -17,16 +21,20 @@ interface PlatformStats {
 
 interface HomeClientProps {
   initialStats?: PlatformStats | null;
+  initialAuthStatus: boolean;
+  initialQuotaUsage: number;
+  remainingUses: number;
 }
 
-export default function HomeClient({ initialStats }: HomeClientProps) {
+export default function HomeClient({ initialStats, initialAuthStatus, initialQuotaUsage, remainingUses: initialRemainingUses }: HomeClientProps) {
   const [step, setStep] = useState<"WIZARD" | "RESULT">("WIZARD");
   const [generationData, setGenerationData] = useState<any>(null);
-  const [isAnonymous, setIsAnonymous] = useState<boolean | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState<boolean>(initialAuthStatus);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'default' | 'limit_reached'>('default');
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [quotaUsage, setQuotaUsage] = useState<number | null>(null);
+  const [quotaUsage, setQuotaUsage] = useState<number>(initialQuotaUsage);
+  const [remainingUses, setRemainingUses] = useState<number>(initialRemainingUses);
   
   const supabase = createClient();
 
@@ -41,6 +49,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       if (res.ok) {
         const data = await res.json();
         setQuotaUsage(data.usage_count);
+        setRemainingUses(data.remaining_uses);
       }
     } catch (err) {
       console.error("Error fetching quota:", err);
@@ -52,27 +61,19 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
       return;
     }
 
-    const checkUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsAnonymous(!user);
-        fetchQuota(); // Fetch initial quota
-      } catch (err) {
-        console.error("Auth check error:", err);
-        setIsAnonymous(true); // Fallback to anonymous on error
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      // Only react to active state changes, avoid SSR override logic
+      const sessionIsAnon = !session?.user;
+      if (sessionIsAnon !== isAnonymous) {
+        setIsAnonymous(sessionIsAnon);
+        fetchQuota(); // Refresh quota on active auth change
       }
-    };
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAnonymous(!session?.user);
-      fetchQuota(); // Refresh quota on auth change
     });
 
     return () => {
       if (subscription) subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, isAnonymous]);
 
   const handleGoogleLogin = async () => {
     if (!supabase || isRedirecting) return;
@@ -92,13 +93,9 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
   };
 
   // Remaining uses logic
-  const currentUsage = generationData?.usage_count !== undefined 
-    ? generationData.usage_count 
-    : (quotaUsage ?? 0);
-
-  const remainingUses = generationData?.free_uses_remaining !== undefined 
+  const currentRemaining = generationData?.free_uses_remaining !== undefined 
     ? generationData.free_uses_remaining 
-    : (3 - currentUsage);
+    : remainingUses;
   
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900/40 dark:selection:text-blue-100">
@@ -112,7 +109,7 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
 
         {isAnonymous === true && (
           <QuotaBanner 
-            remainingUses={remainingUses} 
+            remainingUses={currentRemaining} 
             isAnonymous={isAnonymous} 
           />
         )}
@@ -120,8 +117,8 @@ export default function HomeClient({ initialStats }: HomeClientProps) {
         <div className="px-6 sm:px-10 md:px-14 pt-6 sm:pt-10 md:pt-14 pb-2 sm:pb-4 md:pb-6">
           {step === "WIZARD" ? (
             <Wizard 
-              remainingUses={remainingUses}
-              isAnonymous={isAnonymous ?? true}
+              remainingUses={currentRemaining}
+              isAnonymous={isAnonymous}
               onOpenAuth={handleOpenAuthModal}
               onComplete={(data: any) => {
                 setGenerationData(data);
