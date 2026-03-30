@@ -1,80 +1,55 @@
-## **ALBERTO PÉREZ OJEDA**
+# ALBERTO PÉREZ OJEDA
+## Ingegnere Informatico | Full-Stack Developer
 
-**Ingegnere Informatico | Full-Stack Developer**
+**Telefono:** (+39) 3520538785  
+**Email:** Albert P O  
+**Lingue:** Spagnolo (Madrelingua), Inglese (Avanzato), Italiano (Base)
 
-**Contatto:**
-- **Telefono:** (+39) 3520538785
-- **LinkedIn:** [Link al profilo]
-- **Località:** Disponibile al trasferimento ad Aprilia (LT)
+### PROFILO PROFESSIONALE
+Ingegnere Informatico con oltre 5 anni di esperienza nello sviluppo software e nella gestione di infrastrutture tecnologiche. Specializzato in **Python** e tecnologie web, con una solida base analitica per la risoluzione di problemi complessi. Appassionato di innovazione e strumenti di AI generativa, cerco di consolidare la mia carriera come Full-Stack Developer in un ambiente stimolante come quello di Aprilia, mettendo a disposizione le mie competenze tecniche e la mia capacità di apprendimento rapido di nuovi stack tecnologici.
 
----
+### COMPETENZE TECNICHE
+- **Linguaggi di Programmazione:** Python (Esperto), Java, SQL, JavaScript.
+- **Sviluppo Web:** HTML5, CSS3, JavaScript (Frontend & Backend).
+- **Database:** PostgreSQL (Relazionali), gestione dati e ottimizzazione query.
+- **Sistemi e DevOps:** Linux (Amministrazione base), Git, Docker (Conoscenza teorica/base).
+- **Metodologie:** Agile, Scrum, Analisi dei requisiti, CI/CD (Concetti base).
+- **AI Tools:** Claude, ChatGPT, GitHub Copilot per l'ottimizzazione del codice e documentazione.
 
-## **PROFILO PROFESSIONALE**
+### ESPERIENZA PROFESSIONALE
 
-Ingegnere Informatico con oltre 5 anni di esperienza nello sviluppo software e nella gestione di infrastrutture tecnologiche. Specializzato in **Python** e tecnologie backend, con una solida base nello sviluppo web e nella risoluzione di problemi complessi. Esperienza consolidata in ambienti **Agile/Scrum**, con una forte propensione all'apprendimento di nuovi stack tecnologici come **Go** e **Angular**. Orientato all'ottimizzazione dei processi tramite l'uso di AI generativa e metodologie moderne di sviluppo.
+**Empresa di Telecomunicazioni di Cuba S.A (ETECSA)**  
+**Specialista B in Telematica** | *set 2023 - mag 2025*
+- Monitoraggio proattivo dell’infrastruttura di rete per garantire la continuità dei servizi critici.
+- Analisi e risoluzione di anomalie tecniche complesse, assicurando il rispetto degli SLA aziendali.
+- Collaborazione con team cross-funzionali per il follow-up di guasti ed eventi di rete.
 
----
+**Correos de Cuba (Azienda Postale Cubana)**  
+**Specialista B in Informatica** | *apr 2021 - gen 2023*
+- Supervisione dei processi tecnologici aziendali, ottimizzando l'efficienza operativa attraverso soluzioni informatiche.
+- Gestione di progetti di investimento per l'acquisizione e l'implementazione di hardware e software strategici.
+- Analisi tecnica per l'individuazione di soluzioni a problematiche di amministrazione aziendale.
 
-## **ESPERIENZA PROFESSIONALE**
+**Centro di Ricerca Tecnologica Integrata (CITI) – Università CUJAE**  
+**Specialista B in Informatica** | *set 2018 - ott 2020*
+- Sviluppo di moduli software utilizzando **Python** e Java, focalizzandosi sulla scalabilità del codice.
+- Implementazione di logiche di backend e integrazione con database relazionali.
+- Partecipazione attiva in team di ricerca per la creazione di soluzioni tecnologiche innovative.
 
-**Empresa di Telecomunicazioni di Cuba S.A (ETECSA)**
-*Specialista B in Telematica*
-*(Settembre 2023 – Maggio 2025)*
+**RGB Elec.**  
+**Tecnico Elettronico** | *gen 2023 - mag 2023*
+- Diagnosi e riparazione di apparecchiature elettroniche, applicando metodologie di problem-solving tecnico.
 
-- Monitoraggio critico dell’infrastruttura di rete per garantire l'alta disponibilità dei servizi.
-- Risoluzione proattiva di anomalie e guasti tecnici in ambienti di rete complessi.
-- Collaborazione con team tecnici per il follow-up di eventi sistemistici.
-- [Considerar agregar: Esperienza con containerizzazione Docker/Kubernetes per la gestione dei servizi di rete].
+### FORMAZIONE ACCADEMICA
 
-**Correos de Cuba (Azienda Postale Cubana)**
-*Specialista B in Informatica*
-*(Aprile 2021 – Gennaio 2023)*
+**Laurea in Ingegneria Informatica**  
+*Universidad de las Ciencias Informáticas (UCI)* | *2013 - 2018*
+- Formazione intensiva in sviluppo software, algoritmi e strutture dati.
+- Esperienza pratica in centri di produzione informatica integrati all'università.
+- Focus su metodologie agili e lavoro di squadra in progetti reali.
 
-- Supervisione e analisi dei processi tecnologici aziendali, identificando soluzioni software e hardware scalabili.
-- Gestione del ciclo di vita degli investimenti tecnologici per l'amministrazione aziendale.
-- Analisi dei requisiti e implementazione di soluzioni informatiche per l'ottimizzazione dei flussi di lavoro.
-
-**Centro di Ricerca Tecnologica Integrata (CITI) – Università CUJAE**
-*Specialista B in Informatica / Software Developer*
-*(Settembre 2018 – Ottobre 2020)*
-
-- Sviluppo di applicazioni backend utilizzando **Python** e **Java**.
-- Progettazione e gestione di database relazionali con **PostgreSQL**.
-- Implementazione di logiche di business complesse e integrazione di sistemi.
-- Utilizzo di **Git** per il controllo di versione e collaborazione in team di sviluppo.
-
-**RGB Elec.**
-*Tecnico Elettronico*
-*(Gennaio 2023 – Maggio 2023)*
-
-- Diagnosi e riparazione di hardware elettronico, rafforzando le capacità di problem-solving tecnico.
-
----
-
-## **COMPETENZE TECNICHE**
-
-- **Linguaggi:** Python (Avanzato), Java, SQL, JavaScript.
-- **Web & Frontend:** HTML5, CSS3, JavaScript (ES6+). [Considerar agregar: Angular/Django].
-- **Database:** PostgreSQL (Esperto), NoSQL [Considerar agregar: MongoDB/Elastic Search].
-- **Sistemi & DevOps:** Linux (Avanzato), Git, Docker [Considerar agregar: Kubernetes/AWS].
-- **Metodologie:** Agile, Scrum, CI/CD [Considerar agregar: Jenkins/GitHub Actions].
-- **AI Tools:** ChatGPT, Claude, GitHub Copilot per l'ottimizzazione del codice e documentazione.
-
----
-
-## **FORMAZIONE ACCADEMICA**
-
-**Laurea Magistrale in Ingegneria Informatica**
-*Universidad de las Ciencias Informáticas (UCI)*
-*(2013 – 2018)*
-
-- Specializzazione in sviluppo software, algoritmi e architetture di sistema.
-- Integrazione pratica in centri di produzione informatica durante il percorso accademico.
-
----
-
-## **LINGUE**
-
-- **Spagnolo:** Madrelingua
-- **Inglese:** Intermedio (B2 - Capacità di lettura documentazione tecnica e comunicazione)
-- **Italiano:** Base (A2 - In fase di rapido apprendimento)
+### COMPETENZE TRASVERSALI
+- Problem solving analitico.
+- Adattabilità a nuovi stack tecnologici.
+- Orientamento al cliente e ai risultati.
+- Gestione del tempo e proattività.
