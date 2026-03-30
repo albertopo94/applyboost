@@ -67,7 +67,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Copy standalone build from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/standalone/.next/static ./.next/static
+COPY --from=builder /app/.next/static ./.next/static
 # Ensure prompts are available in production
 COPY --from=builder /app/src/lib/prompts ./src/lib/prompts
 
