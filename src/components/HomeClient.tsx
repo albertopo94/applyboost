@@ -98,8 +98,15 @@ export default function HomeClient({ initialStats, initialAuthStatus, initialQuo
     : remainingUses;
   
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900/40 dark:selection:text-blue-100">
-      <div className="w-full max-w-6xl bg-white dark:bg-slate-900/40 shadow-sm dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800">
+    <main className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 antialiased selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/40 dark:selection:text-indigo-100 relative">
+      
+      {/* Background Orbs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none flex justify-center items-center">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 dark:bg-violet-600/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse duration-[8000ms]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-500/10 dark:bg-indigo-600/10 blur-[150px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse duration-[12000ms]" />
+      </div>
+
+      <div className="w-full max-w-6xl bg-white/90 dark:bg-[#0B0F19]/60 backdrop-blur-2xl shadow-sm dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] rounded-3xl overflow-hidden border border-gray-100/50 dark:border-white/5 relative z-10 transition-all duration-300">
         
         <Header 
           step={step} 

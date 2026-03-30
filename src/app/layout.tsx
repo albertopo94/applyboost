@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 
 export const dynamic = 'force-dynamic';
 
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Toaster } from "sonner";
 import AuthSync from "@/components/AuthSync";
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-jakarta",
 });
 
 export const metadata: Metadata = {
@@ -63,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={inter.variable} suppressHydrationWarning>
+    <html lang="es" className={jakarta.variable} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
