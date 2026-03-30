@@ -45,7 +45,8 @@ export default function Wizard({
     if (text.trim()) setCvFile(null);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError("");
     console.log("[WIZARD] handleSubmit. isAnonymous:", isAnonymous, "remainingUses:", remainingUses);
     
@@ -141,7 +142,10 @@ export default function Wizard({
       <WizardHero />
 
       {/* Form Area */}
-      <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-6 md:p-8 flex flex-col gap-8">
+      <form 
+        onSubmit={handleSubmit}
+        className="bg-white dark:bg-slate-800/80 rounded-2xl border border-gray-200 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] p-6 md:p-8 flex flex-col gap-8"
+      >
         
         <CVInput 
           cvFile={cvFile}
@@ -160,8 +164,12 @@ export default function Wizard({
 
         {/* Errors Area */}
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/50 rounded-lg text-sm font-medium">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div 
+            role="alert" 
+            aria-live="polite" 
+            className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/50 rounded-lg text-sm font-medium"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
             {error}
           </div>
         )}
@@ -169,15 +177,15 @@ export default function Wizard({
         {/* Final CTA Area */}
         <div className="pt-2">
           <button
-            onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold tracking-tight py-3.5 px-6 rounded-xl shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.15)] flex items-center justify-center transition-all active:scale-[0.98]"
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold tracking-tight py-3.5 px-6 rounded-xl shadow-sm dark:shadow-[inset_0_1px_rgba(255,255,255,0.15)] flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800 active:scale-[0.98]"
           >
             {t("hero.cta")}
           </button>
-          <p className="mt-5 text-center text-[11px] text-gray-500 dark:text-slate-400 font-medium">
+          <p className="mt-5 text-center text-[11px] text-gray-500 dark:text-slate-400 font-medium" aria-hidden="true">
             {t("wizard.language_hint")}
           </p>        </div>
-      </div>
+      </form>
     </div>
   );
 }

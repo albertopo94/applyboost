@@ -42,6 +42,21 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ApplyBoost",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": "Optimiza tu CV y genera cover letters personalizadas para cada oferta en segundos. Score ATS, edición inline y exportación en PDF pixel-perfect.",
+  "url": "https://www.45.90.237.160.sslip.io",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,6 +64,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased font-sans bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-50 transition-colors duration-200">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>
