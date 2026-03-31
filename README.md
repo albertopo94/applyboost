@@ -15,10 +15,10 @@ ApplyBoost no es un creador de CVs ni un chatbot. Es un **optimizador de candida
 Integramos todo en un flujo simple, separando la IA (que transforma) del código tradicional (que estructura y da formato) para cero alucinaciones.
 
 1. **Entrada:** CV (PDF/Imagen/Texto) + Oferta laboral (URL o texto).
-2. **Procesamiento Resiliente:** 
+2. **Procesamiento de Scraping:** 
    * **Fase 1 (Lectura):** OCR nativo multimodal con **Gemini** (visualizando integrar modelos Open Source a futuro para no depender de corporaciones).
    * **Fase 2 (Generación):** Motor en cascada iterativa. Si Gemini falla, entra **Groq**; si falla, delega a **Cerebras**. Máxima disponibilidad.
-   * **Scraping Propietario:** Extracción de URLs locales y directas (evitando costos de APIs externas).
+   * **Scraping por Tiers (Calidad vs. Resiliencia):** Cascada de extracción que prioriza **markdown.new** (Tier 1) para renderizado de SPAs y obtención de Markdown estructurado para el LLM, con fallback local mediante **Cheerio** (Tier 2) para asegurar disponibilidad y ahorro de cuotas externas. Incluye detección inmediata (*fail-fast*) de dominios restringidos (LinkedIn, InfoJobs).
 3. **Salida Editable:** War-room para previsualizar, exportar PDF limpio e iniciar sesión (OAuth simple) si quieres remover los límites del sistema invitado. El único costo actual es tu autenticación.
 
 ## 2. Enlace a la Demo
