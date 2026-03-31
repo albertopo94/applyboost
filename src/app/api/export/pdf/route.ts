@@ -9,7 +9,7 @@ import { getBrowser } from "@/lib/render/browserManager";
 
 /**
  * PDF Export API Route (SDD §7.3, §8.4)
- * Optimized with Singleton Browser and Atomic Stats Fallback.
+ * Optimized with Singleton Browser and Resilient Stats Update.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -109,14 +109,12 @@ export async function POST(req: NextRequest) {
         .eq("user_id", effectiveUserId);
     }
 
-    // ATOMIC STATS UPDATE WITH FALLBACK
+    // RESILIENT STATS UPDATE (Direct table update to avoid RPC PGRST202)
     const updateStats = async () => {
       try {
         const adminClient = createAdminClient();
-        const { error } = await adminClient.rpc('increment_platform_stat', { stat_name: 'cvs_downloaded' });
-        if (error) {
-          await adminClient.rpc('increment_platform_stat', { name: 'cvs_downloaded' });
-        }
+        const { data: current } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).maybeSingle();
+        await adminClient.from('platform_stats').update({ cvs_downloaded: (current?.cvs_downloaded || 0) + 1 }).eq('id', 1);
       } catch (e) {
         console.error("[STATS_DOWNLOAD_ERROR]", e);
       }

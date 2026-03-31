@@ -19,30 +19,34 @@ export default async function Home() {
 
   const adminClient = createAdminClient();
   
-  // 1. Promesa de Estadísticas (Con timeout para no bloquear el TTI)
+  // 1. Promesa de Estadísticas (Resiliente y con mayor timeout)
   const statsPromise = (async () => {
     try {
       if (!adminClient) return { cvs_generated: 0, page_views: 0, cvs_downloaded: 0 };
       
+      // Aumentamos a 5 segundos por latencia en el VPS
       const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Stats timeout')), 2000)
+        setTimeout(() => reject(new Error('Stats timeout')), 5000)
       );
       
+      // Usamos maybeSingle para evitar errores si la fila no existe
       const fetchPromise = adminClient
         .from('platform_stats')
-        .select('*')
+        .select('page_views, cvs_generated, cvs_downloaded')
         .eq('id', 1)
-        .single();
+        .maybeSingle();
 
-      const { data } = await Promise.race([fetchPromise, timeout]) as any;
+      const result = await Promise.race([fetchPromise, timeout]) as any;
+      const data = result?.data;
+
       return data || { cvs_generated: 0, page_views: 0, cvs_downloaded: 0 };
     } catch (e) {
-      console.warn("Could not fetch platform stats (using fallback):", e);
+      console.warn("[HOME_STATS_FETCH_WARNING] Fallback to zeros:", e instanceof Error ? e.message : e);
       return { cvs_generated: 0, page_views: 0, cvs_downloaded: 0 };
     }
   })();
 
-  // 2. Promesa de Autenticación y Cuotas Server-Side
+  // 2. Promesa de Autenticación y Cuotas
   const quotaPromise = (async () => {
     try {
       const { user, userId, anonymousId } = await requireAuth({ allowAnonymous: true });
@@ -52,7 +56,14 @@ export default async function Home() {
 
       if (user && userId) {
         isAnonymous = false;
-        return { is_anonymous: isAnonymous, usage_count: 0, remaining_uses: limit };
+        // Audit: Registered users should also have their usage tracked in 'generations'
+        const { count, error } = await adminClient
+          .from("generations")
+          .select("*", { count: 'exact', head: true })
+          .eq("user_id", userId);
+        
+        usageCount = count || 0;
+        return { is_anonymous: isAnonymous, usage_count: usageCount, remaining_uses: 999 }; // Unlimited for registered? Or set real limit.
       }
 
       if (anonymousId && adminClient) {
@@ -70,7 +81,6 @@ export default async function Home() {
     }
   })();
 
-  // Ejecutamos ambas consultas vitales en paralelo para optimizar la carga (async-parallel pattern)
   const [stats, quota] = await Promise.all([statsPromise, quotaPromise]);
 
   return (

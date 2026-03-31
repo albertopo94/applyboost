@@ -5,25 +5,28 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Stats API: Increments page views
- * Optimized: Uses atomic RPC with fallback logic for schema ambiguity.
+ * Optimized: Direct table update to avoid RPC schema cache issues (PGRST202).
  */
 export async function POST() {
   try {
     const adminClient = createAdminClient();
     
-    // Attempt 1: Named parameter based on official migration
-    const { error } = await adminClient.rpc('increment_platform_stat', { 
-      stat_name: 'page_views' 
-    });
+    // 1. Get current value
+    const { data: current } = await adminClient
+      .from('platform_stats')
+      .select('page_views')
+      .eq('id', 1)
+      .maybeSingle();
 
-    if (error) {
-      console.warn("[STATS_VISIT_RETRY] Failed with stat_name, trying generic fallback...");
-      // Attempt 2: Generic name property if PostgREST cache is messy
-      const { error: error2 } = await adminClient.rpc('increment_platform_stat', { 
-        name: 'page_views' 
-      });
-      if (error2) throw error2;
-    }
+    const currentViews = current?.page_views || 0;
+
+    // 2. Atomic-like update
+    const { error } = await adminClient
+      .from('platform_stats')
+      .update({ page_views: currentViews + 1 })
+      .eq('id', 1);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (err) {

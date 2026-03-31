@@ -107,19 +107,24 @@ export class GenerationService {
     }
     console.log(`[GenerationService] 'cv_versions' success!`);
 
-    // 4. Background stats update (Atomic RPC)
-    // FIX: Using positional parameter or ensuring name match with DB schema.
-    // Based on migration 20260323000000, it's 'stat_name'. 
-    // If it fails with PGRST202, it means the API cache needs refresh or the signature is tricky.
-    supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' })
-      .then(({ error }) => {
-        if (error) {
-          console.error("[STATS_GENERATE_ERROR] Code:", error.code, "Msg:", error.message);
-          // FALLBACK: Try without parameter name if schema is ambiguous
-          return supabase.rpc('increment_platform_stat', { name: 'cvs_generated' });
-        }
-      })
-      .catch(e => console.error("[STATS_GENERATE_EXCEPTION]", e));
+    // 4. Background stats update (Resilient Update)
+    // We avoid RPC to prevent PGRST202 schema cache issues.
+    (async () => {
+      try {
+        const { data: current } = await supabase
+          .from('platform_stats')
+          .select('cvs_generated')
+          .eq('id', 1)
+          .maybeSingle();
+        
+        await supabase
+          .from('platform_stats')
+          .update({ cvs_generated: (current?.cvs_generated || 0) + 1 })
+          .eq('id', 1);
+      } catch (e) {
+        console.error("[STATS_GENERATE_ASYNC_ERROR]", e);
+      }
+    })();
 
     return {
       generation_id: genId,
