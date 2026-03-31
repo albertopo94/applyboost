@@ -16,30 +16,17 @@ export async function extractViaMarkdownNew(
   extractorName: string = "markdown-v3"
 ): Promise<JobExtractResult> {
   const { url, requestId = "unknown" } = input;
-  const apiKey = process.env.MARKDOWN_NEW_API_KEY;
-
-  if (!apiKey) {
-    console.error(`[EXTRACT_MARKDOWN][${requestId}] FAILED: Missing MARKDOWN_NEW_API_KEY`);
-    return {
-      status: "source_unavailable",
-      domain: "generic",
-      extractor: `${extractorName}-failed`,
-      confidence: 0,
-      strategyPath: "legacy"
-    };
-  }
-
   console.log(`[EXTRACT_MARKDOWN][${requestId}] TIER 2 (DIRECT/FALLBACK) via markdown.new for ${url}`);
 
   try {
     const response = await fetch("https://markdown.new/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": apiKey
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ url })
     });
+
 
     const remaining = response.headers.get("x-rate-limit-remaining");
     console.log(`[EXTRACT_MARKDOWN][${requestId}] API Rate Limit Remaining: ${remaining}`);
