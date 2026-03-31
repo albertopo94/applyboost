@@ -27,7 +27,7 @@ export function ExplanationPanel({
         
         {/* CV Rationale (Left Column) */}
         {cvExplanation ? (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-blue-100 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-blue-100 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-shadow group relative">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl transition-colors group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40">
                 <ShieldCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -37,10 +37,12 @@ export function ExplanationPanel({
               </h3>
             </div>
             <div className="h-[160px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
-              <div className="prose prose-slate dark:prose-invert prose-sm max-w-none text-slate-600 dark:text-slate-400 leading-relaxed">
+              <div className="prose prose-slate dark:prose-invert prose-sm max-w-none text-slate-600 dark:text-slate-400 leading-relaxed pb-6">
                 {cvExplanation}
               </div>
             </div>
+            {/* Bottom Gradient Fade */}
+            <div className="absolute bottom-6 left-6 right-6 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
           </div>
         ) : (
           <div className="hidden md:block" />
@@ -48,7 +50,7 @@ export function ExplanationPanel({
 
         {/* Cover Letter Rationale (Right Column) */}
         {showCL && clExplanation && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-100 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-100 dark:border-white/5 p-6 shadow-sm hover:shadow-md transition-shadow group relative">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl transition-colors group-hover:bg-amber-100 dark:group-hover:bg-amber-900/40">
                 <PenTool className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -58,10 +60,12 @@ export function ExplanationPanel({
               </h3>
             </div>
             <div className="h-[160px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 scrollbar-track-transparent">
-              <div className="prose prose-slate dark:prose-invert prose-sm max-w-none text-slate-600 dark:text-slate-400 leading-relaxed">
+              <div className="prose prose-slate dark:prose-invert prose-sm max-w-none text-slate-600 dark:text-slate-400 leading-relaxed pb-6">
                 {clExplanation}
               </div>
             </div>
+            {/* Bottom Gradient Fade */}
+            <div className="absolute bottom-6 left-6 right-6 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
           </div>
         )}
 

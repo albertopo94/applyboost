@@ -11,7 +11,7 @@ export const AuditSidebar = ({ diff, explanation }: { diff: DiffItem[]; explanat
   const { t } = useLanguage();
 
   return (
-    <div className="flex flex-col bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden">
+    <div className="flex flex-col bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl overflow-hidden relative group">
       <div className="p-6 border-b border-gray-100 dark:border-slate-800">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-blue-600" />
@@ -52,8 +52,12 @@ export const AuditSidebar = ({ diff, explanation }: { diff: DiffItem[]; explanat
               </div>
             </div>
           ))}
+          <div className="h-6 w-full" aria-hidden="true" />
         </div>
       </div>
+      
+      {/* Bottom Gradient Fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
     </div>
   );
 };
