@@ -19,12 +19,14 @@ export async function extractViaMarkdownNew(
   console.log(`[EXTRACT_MARKDOWN][${requestId}] TIER 2 (DIRECT/FALLBACK) via markdown.new for ${url}`);
 
   try {
+    // We use "method": "browser" to force Tier 3 (headless browser) rendering in markdown.new.
+    // This is required for heavy SPA sites like Indeed that fail with Tier 1 or Tier 2.
     const response = await fetch("https://markdown.new/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url, method: "browser" })
     });
 
 
