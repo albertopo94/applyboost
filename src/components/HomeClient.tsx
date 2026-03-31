@@ -38,6 +38,18 @@ export default function HomeClient({ initialStats, initialAuthStatus, initialQuo
   
   const supabase = createClient();
 
+  // 1. Telemetry: Count visit once on mount
+  useEffect(() => {
+    const reportVisit = async () => {
+      try {
+        await fetch("/api/stats/visit", { method: "POST" });
+      } catch (e) {
+        // Silent fail for telemetry
+      }
+    };
+    reportVisit();
+  }, []);
+
   const handleOpenAuthModal = (mode: 'default' | 'limit_reached' = 'default') => {
     setAuthModalMode(mode);
     setShowAuthModal(true);

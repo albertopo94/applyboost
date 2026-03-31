@@ -3,35 +3,26 @@ import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Stats API: Increments page views
+ * Optimized: Uses atomic RPC to prevent race conditions and improve performance.
+ */
 export async function POST() {
   try {
     const adminClient = createAdminClient();
     
-    // Leemos el valor actual
-    const { data: currentStats } = await adminClient
-      .from('platform_stats')
-      .select('page_views')
-      .eq('id', 1)
-      .single();
+    // ATOMIC UPDATE: Call the stored procedure in Supabase
+    // This is faster and avoids read-then-write race conditions.
+    const { error } = await adminClient.rpc('increment_platform_stat', { 
+      stat_name: 'page_views' 
+    });
 
-    const currentViews = currentStats?.page_views || 0;
-
-    // Incrementamos +1
-    const { error } = await adminClient
-      .from('platform_stats')
-      .update({ page_views: currentViews + 1 })
-      .eq('id', 1);
-
-    if (error) {
-      // Si falla el update, intentamos upsert
-      await adminClient
-        .from('platform_stats')
-        .upsert({ id: 1, page_views: currentViews + 1 }, { onConflict: 'id' });
-    }
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Error updating stats:", err);
+    console.error("[STATS_VISIT_ERROR]", err);
+    // Silent fail for stats to not break user experience
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

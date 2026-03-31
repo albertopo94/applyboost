@@ -108,13 +108,14 @@ export class GenerationService {
     }
     console.log(`[GenerationService] 'cv_versions' success!`);
 
-    // Background stats update
-    try {
-      createAdminClient().from('platform_stats').select('cvs_generated').eq('id', 1).single()
-        .then(({data: current}) => {
-          createAdminClient().from('platform_stats').update({ cvs_generated: (current?.cvs_generated || 0) + 1 }).eq('id', 1);
-        });
-    } catch (e) {}
+    // 4. Background stats update (Reliable & Atomic)
+    // We trigger this without 'await' to not block the main response, 
+    // but using RPC ensures the server-side operation is atomic.
+    supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' })
+      .then(({ error }) => {
+        if (error) console.error("[STATS_GENERATE_ERROR]", error);
+      })
+      .catch(e => console.error("[STATS_GENERATE_EXCEPTION]", e));
 
     return {
       generation_id: genId,
