@@ -23,7 +23,7 @@ Integramos todo en un flujo simple, separando la IA (que transforma) del código
 
 ## 2. Enlace a la Demo
 
-🔗 **Demo funcional actual:** <a href="https://www.45.90.237.160.sslip.io/" target="_blank">https://www.45.90.237.160.sslip.io/</a>
+🔗 **Demo funcional actual:** [https://www.45.90.237.160.sslip.io/](https://www.45.90.237.160.sslip.io/)
 
 *(Nota: El dominio `nic.eu.org` oficial se encuentra pendiente de aprobación. Se provee enlace transitorio al VPS enrutado con SSL)*.
 
