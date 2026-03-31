@@ -68,7 +68,7 @@ export class OptimizeCVUseCase {
 
         if (scrapResult.status === "blocked") {
           // Trigger the Iron Wall error
-          throw new Error("JOB_DESCRIPTION_RESTRICTED");
+          throw new Error("restricted_domain");
         }
 
         if (scrapResult.status === "ok" && scrapResult.text) {

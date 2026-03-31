@@ -118,6 +118,7 @@
     "too_many_requests": "Abbiamo temporaneamente superato la capacità del server. Attendi un minuto e riprova.",
     "unprocessable_entity": "Non siamo riusciti a elaborare correttamente il tuo CV. Assicurati che il file non sia danneggiato o protetto.",
     "bad_request": "Mancano informazioni necessarie per elaborare la tua richiesta.",
+    "restricted_domain": "LinkedIn e InfoJobs non consentono la lettura automatica per sicurezza. Per favore, copia la descrizione del lavoro e incollala manualmente qui sotto.",
     "internal_error": "Si è verificato un problema imprevisto. Riprova."
   }
 }
