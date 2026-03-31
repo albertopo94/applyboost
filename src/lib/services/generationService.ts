@@ -85,7 +85,6 @@ export class GenerationService {
     const genId = genData?.id;
     console.log(`[GenerationService] 'generations' success! ID: ${genId}. Now saving to 'cv_versions'...`);
 
-    // NOTE: We don't save cv_explanation to DB yet to avoid breaking current MVP schema
     const { error: cvError } = await supabase
       .from("cv_versions")
       .insert({
@@ -108,19 +107,24 @@ export class GenerationService {
     }
     console.log(`[GenerationService] 'cv_versions' success!`);
 
-    // 4. Background stats update (Reliable & Atomic)
-    // We trigger this without 'await' to not block the main response, 
-    // but using RPC ensures the server-side operation is atomic.
+    // 4. Background stats update (Atomic RPC)
+    // FIX: Using positional parameter or ensuring name match with DB schema.
+    // Based on migration 20260323000000, it's 'stat_name'. 
+    // If it fails with PGRST202, it means the API cache needs refresh or the signature is tricky.
     supabase.rpc('increment_platform_stat', { stat_name: 'cvs_generated' })
       .then(({ error }) => {
-        if (error) console.error("[STATS_GENERATE_ERROR]", error);
+        if (error) {
+          console.error("[STATS_GENERATE_ERROR] Code:", error.code, "Msg:", error.message);
+          // FALLBACK: Try without parameter name if schema is ambiguous
+          return supabase.rpc('increment_platform_stat', { name: 'cvs_generated' });
+        }
       })
       .catch(e => console.error("[STATS_GENERATE_EXCEPTION]", e));
 
     return {
       generation_id: genId,
       cv_optimizado: llmResult.cv_optimizado,
-      cv_explanation: llmResult.cv_explanation, // FIX: Direct pass to UI
+      cv_explanation: llmResult.cv_explanation,
       cover_letter: llmResult.cover_letter,
       cover_letter_explanation: Array.isArray(llmResult.cover_letter_explanation) 
         ? llmResult.cover_letter_explanation.join("\n") 

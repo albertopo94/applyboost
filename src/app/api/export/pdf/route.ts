@@ -9,18 +9,13 @@ import { getBrowser } from "@/lib/render/browserManager";
 
 /**
  * PDF Export API Route (SDD §7.3, §8.4)
- * Method: POST
- * Payload: { text: string, filename: string, templateMode: "simple" | "modern" }
- * Returns: PDF Binary or 401/402/500
- * Optimized with Singleton Browser for VPS context.
+ * Optimized with Singleton Browser and Atomic Stats Fallback.
  */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verificar Autenticación (Permitir anónimos para el MVP)
     const { user, anonymousId } = await requireAuth({ allowAnonymous: true });
     const effectiveUserId = user?.id || anonymousId;
 
-    // 2. Verificar Paywall
     const paywall = await checkPaywall(effectiveUserId);
     if (!paywall.allowed) {
       return NextResponse.json({ 
@@ -32,22 +27,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const templateMode = body.templateMode || "simple";
     const text = body.text;
-    const type = body.type || "cv"; // cv | cl
+    const type = body.type || "cv";
 
     if (!text) {
       return NextResponse.json({ error: "Missing text content" }, { status: 400 });
     }
     
-    // 3. Generar HTML según el template
     let html = "";
 
     if (templateMode === "modern" && type !== "cl") {
-      // MAGIC PARSER: Convert plain text (including user edits) to structured JSON
       console.log(`[PDF_EXPORT] Generating MODERN PDF for user ${effectiveUserId}...`);
       const structuredData = await parseTextToStructuredCV(text);
       html = buildModernCvHtml(structuredData);
     } else {
-      // SIMPLE TEMPLATE (Markdown-ish to HTML)
       console.log(`[PDF_EXPORT] Generating SIMPLE PDF (or CL) for user ${effectiveUserId}...`);
       const formattedHtml = text
         .split('\n')
@@ -85,14 +77,12 @@ export async function POST(req: NextRequest) {
         </html>`;
     }
       
-    // 4. Renderizar PDF con el Singleton Browser Manager
     const browser = await getBrowser();
     
     let pdfBuffer: Buffer;
     let page;
     try {
       page = await browser.newPage();
-      // Usamos networkidle0 para asegurar que carguen fuentes externas si las hay
       await page.setContent(html, { waitUntil: 'domcontentloaded' });
       const buffer = await page.pdf({ 
         format: "A4", 
@@ -102,10 +92,8 @@ export async function POST(req: NextRequest) {
       pdfBuffer = Buffer.from(buffer);
     } finally {
       if (page) await page.close();
-      // IMPORTANTE: NO CERRAMOS EL BROWSER (browser.close), dejamos que el Singleton lo maneje.
     }
 
-    // 5. Post-Procesamiento (Consumir crédito y stats)
     const supabase = await createClient();
     
     const { data: exportData } = await supabase
@@ -121,20 +109,20 @@ export async function POST(req: NextRequest) {
         .eq("user_id", effectiveUserId);
     }
 
-    // 6. Incrementar Estadísticas (No bloqueante)
+    // ATOMIC STATS UPDATE WITH FALLBACK
     const updateStats = async () => {
       try {
         const adminClient = createAdminClient();
-        const { data: currentStats } = await adminClient.from('platform_stats').select('cvs_downloaded').eq('id', 1).single();
-        const nextValue = (currentStats?.cvs_downloaded || 0) + 1;
-        await adminClient.from('platform_stats').update({ cvs_downloaded: nextValue }).eq('id', 1);
+        const { error } = await adminClient.rpc('increment_platform_stat', { stat_name: 'cvs_downloaded' });
+        if (error) {
+          await adminClient.rpc('increment_platform_stat', { name: 'cvs_downloaded' });
+        }
       } catch (e) {
-        console.error("[STATS_UPDATE_ERROR]", e);
+        console.error("[STATS_DOWNLOAD_ERROR]", e);
       }
     };
     updateStats().catch(e => console.error("[STATS_ASYNC_ERROR]", e));
 
-    // 7. Retornar PDF
     return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
