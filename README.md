@@ -51,6 +51,8 @@ ApplyBoost utiliza un entorno de producción basado en **Auto-alojamiento (Self-
 
 ### Configuraciones Críticas adaptadas al Servidor
 Poner este proyecto en producción en el VPS requirió ajustes específicos para garantizar estabilidad bajo estrés de I/O y procesamiento concurrente:
+
 1. **Networking Restringido (Filtro IPv4):** Para asegurar la descarga estable de paquetes y contenedores base en el datacenter, se forzó el uso estricto en el gestor de paquetes (`Acquire::ForceIPv4 "true"`).
-2. **Gestión de RAM Quirúrgica:** Next.js 15 devora memoria al compilar el App Router. Como el VPS destina ~2.5GB estables al resto de la pila Docker, configuramos un límite estricto de **1024MB - 1536MB** vía `NODE_OPTIONS` y `webpackMemoryOptimizations` para evitar picos que tiren el servidor (OOM Killer).
+2. **Build Externo y CI/CD:** La compilación de Next.js 15 es una tarea pesada que saturaba los recursos del VPS (picos de carga de 18.0). Implementamos un flujo de **GitHub Actions** que construye la imagen de Docker fuera del servidor. El VPS ahora solo descarga la imagen final desde **GHCR**, manteniendo la estabilidad operativa total durante los despliegues. **El VPS descansa mientras GitHub compila.**
 3. **Storage & Stand-alone Build:** Optimizamos el Dockerfile para crear un *output stand-alone*, minimizando drásticamente el peso del empaquetado final alojado en el SSD de 80GB, sumado a limpiezas cronometradas (`docker system prune -af`).
+4. **Resiliencia de Memoria (Swap & Singleton):** Se habilitó una **Swap de 4GB** como red de seguridad contra bloqueos (OOM). Además, se implementó un **Browser Singleton** para Puppeteer, manteniendo una única instancia de Chromium "tibia" en memoria, reduciendo el tiempo de respuesta y el consumo de RAM por cada exportación de PDF.
