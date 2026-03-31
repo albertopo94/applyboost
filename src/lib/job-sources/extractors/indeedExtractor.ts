@@ -35,7 +35,7 @@ export async function extractViaMarkdownNew(
 
     if (response.ok) {
       const data = await response.json();
-      const content = data.markdown || "";
+      const content = data.content || "";
 
       if (content.length > 250) {
         console.log(`[EXTRACT_MARKDOWN][${requestId}] SUCCESS! (${content.length} chars)`);
