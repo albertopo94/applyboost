@@ -34,7 +34,7 @@ export class GeminiClient {
   private readonly modelName: string;
 
   constructor(private readonly apiKey: string) {
-    this.modelName = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+    this.modelName = process.env.GEMINI_MODEL ?? "gemini-3-flash-preview";
   }
 
   async chat(prompt: string, signal?: AbortSignal): Promise<string> {

@@ -2,16 +2,32 @@
 
 import { Link as LinkIcon, XCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: (string | undefined | null | false)[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface JobInputProps {
   jobUrl: string;
   jobText: string;
   onUrlChange: (url: string) => void;
   onTextChange: (text: string) => void;
+  isUrlDisabled?: boolean;
+  isTextDisabled?: boolean;
   jobTextRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-export default function JobInput({ jobUrl, jobText, onUrlChange, onTextChange, jobTextRef }: JobInputProps) {
+export default function JobInput({ 
+  jobUrl, 
+  jobText, 
+  onUrlChange, 
+  onTextChange, 
+  isUrlDisabled = false,
+  isTextDisabled = false,
+  jobTextRef 
+}: JobInputProps) {
   const { t } = useLanguage();
 
   return (
@@ -21,16 +37,24 @@ export default function JobInput({ jobUrl, jobText, onUrlChange, onTextChange, j
       </label>
       <div className="space-y-3">
         <div className="relative">
-          <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" aria-hidden="true" />
+          <LinkIcon className={cn("absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors", 
+            isUrlDisabled ? "text-gray-300 dark:text-slate-700" : "text-gray-400 dark:text-slate-500"
+          )} aria-hidden="true" />
           <input 
             id="job-url-input"
             type="url"
             placeholder={t("wizard.url_placeholder")}
             value={jobUrl}
-            onChange={(e) => onUrlChange(e.target.value)}
-            className="w-full bg-transparent dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border border-gray-200 dark:border-white/10 rounded-xl pl-11 pr-10 py-3 text-[13px] text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            onChange={(e) => !isUrlDisabled && onUrlChange(e.target.value)}
+            disabled={isUrlDisabled}
+            className={cn(
+              "w-full bg-transparent border rounded-xl pl-11 pr-10 py-3 text-[13px] outline-none transition-all",
+              isUrlDisabled
+                ? "bg-gray-50/30 dark:bg-slate-900/20 border-gray-100 dark:border-white/5 text-gray-400 dark:text-slate-600 cursor-not-allowed opacity-50"
+                : "dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            )}
           />
-          {jobUrl && (
+          {jobUrl && !isUrlDisabled && (
             <button
               onClick={() => onUrlChange("")}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 rounded-full hover:scale-110 active:scale-95"
@@ -42,7 +66,9 @@ export default function JobInput({ jobUrl, jobText, onUrlChange, onTextChange, j
           )}
         </div>
         
-        <div className="flex items-center gap-4 text-[11px] font-bold uppercase text-gray-400 dark:text-slate-500" aria-hidden="true">
+        <div className={cn("flex items-center gap-4 text-[11px] font-bold uppercase transition-opacity", 
+          (isUrlDisabled || isTextDisabled) ? "opacity-50" : "text-gray-400 dark:text-slate-500"
+        )} aria-hidden="true">
           <div className="flex-1 h-px bg-gray-100 dark:bg-slate-700" />
           <span>{t("wizard.or_description")}</span>
           <div className="flex-1 h-px bg-gray-100 dark:bg-slate-700" />
@@ -55,10 +81,16 @@ export default function JobInput({ jobUrl, jobText, onUrlChange, onTextChange, j
             placeholder={t("wizard.job_placeholder")}
             aria-label={t("wizard.job_placeholder")}
             value={jobText}
-            onChange={(e) => onTextChange(e.target.value)}
-            className="w-full h-[100px] resize-none bg-transparent dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border border-gray-200 dark:border-white/10 rounded-xl p-4 pr-10 text-[13px] text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            onChange={(e) => !isTextDisabled && onTextChange(e.target.value)}
+            disabled={isTextDisabled}
+            className={cn(
+              "w-full h-[100px] resize-none bg-transparent border rounded-xl p-4 pr-10 text-[13px] outline-none transition-all",
+              isTextDisabled
+                ? "bg-gray-50/30 dark:bg-slate-900/20 border-gray-100 dark:border-white/5 text-gray-400 dark:text-slate-600 cursor-not-allowed opacity-50"
+                : "dark:bg-slate-900/40 dark:focus:bg-[#0B0F19] border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-slate-500"
+            )}
           />
-          {jobText && (
+          {jobText && !isTextDisabled && (
             <button
               onClick={() => onTextChange("")}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 rounded-full hover:scale-110 active:scale-95"

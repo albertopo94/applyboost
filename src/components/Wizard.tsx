@@ -7,6 +7,7 @@ import WizardLoading from "./wizard/WizardLoading";
 import WizardHero from "./wizard/WizardHero";
 import CVInput from "./wizard/CVInput";
 import JobInput from "./wizard/JobInput";
+import { getWizardInputStates } from "@/lib/utils/wizard-logic";
 
 interface WizardProps {
   remainingUses?: number;
@@ -34,9 +35,14 @@ export default function Wizard({
   
   const jobTextRef = useRef<HTMLTextAreaElement>(null);
 
+  // --- Derived State (Logic from utility) ---
+  const inputStates = getWizardInputStates({ cvFile, cvText, jobUrl, jobText });
+
   // --- Handlers ---
   const handleCvFileChange = (file: File | null) => {
     setCvFile(file);
+    // Optimization: Also clear the other state if one is selected, 
+    // though the UI now prevents both from having content.
     if (file) setCvText(""); 
   };
 
@@ -152,6 +158,8 @@ export default function Wizard({
           cvText={cvText}
           onFileChange={handleCvFileChange}
           onTextChange={handleCvTextChange}
+          isFileDisabled={inputStates.isCvFileDisabled}
+          isTextDisabled={inputStates.isCvTextDisabled}
         />
 
         <JobInput 
@@ -159,6 +167,8 @@ export default function Wizard({
           jobText={jobText}
           onUrlChange={setJobUrl}
           onTextChange={setJobText}
+          isUrlDisabled={inputStates.isJobUrlDisabled}
+          isTextDisabled={inputStates.isJobTextDisabled}
           jobTextRef={jobTextRef}
         />
 
