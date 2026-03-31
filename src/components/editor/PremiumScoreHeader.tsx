@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Zap, ArrowRight } from "lucide-react";
+import { Sparkles, Zap, ArrowRight, Info } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const PremiumScoreHeader = ({ original, optimized }: { original: number; optimized: number }) => {
@@ -15,9 +15,16 @@ export const PremiumScoreHeader = ({ original, optimized }: { original: number; 
             <span className="text-xl font-bold text-blue-700 dark:text-blue-400">{optimized}%</span>
           </div>
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <div className="relative group/score">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 cursor-help">
             {t('editor.score_title')}
+            <Info className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+            
+            {/* Tooltip educacional (Hover) */}
+            <div className="absolute left-0 bottom-full mb-2 hidden group-hover/score:block w-[280px] p-3 leading-relaxed bg-slate-800 dark:bg-slate-700 text-slate-100 text-xs rounded-xl shadow-xl z-50 pointer-events-none transition-opacity font-normal">
+              Este valor representa tu <strong className="text-white">Alineación ATS</strong> (Applicant Tracking System).<br/><br/>Mide cuántas palabras y habilidades de la oferta laboral están cubiertas en tu CV. Un puntaje alto te garantiza pasar los filtros robóticos de RRHH y llegar a manos humanas.
+              <div className="absolute -bottom-1 left-4 w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45"></div>
+            </div>
           </h3>
           <p className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2">
             {t('editor.score_subtitle')} 
