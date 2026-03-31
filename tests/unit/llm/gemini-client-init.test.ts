@@ -15,7 +15,7 @@ describe("GeminiClient Initialization", () => {
   it("should default to 'gemini-3-flash-preview' when GEMINI_MODEL env var is missing", () => {
     const client = new GeminiClient("fake-key");
     
-    // This will FAIL currently as it defaults to gemini-1.5-flash
+    // Check that it defaults to the required 2026 standard model
     expect((client as any).modelName).toBe("gemini-3-flash-preview");
   });
 });
