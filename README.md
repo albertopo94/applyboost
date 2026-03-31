@@ -4,13 +4,13 @@
 
 **Convierte ofertas de empleo en CVs y cartas de presentación adaptadas en segundos.**
 
-Aplicar a empleos está roto. Los candidatos envían el mismo CV genérico a todas o adaptan cada una a mano (un proceso lento y agotador). ApplyBoost nace para empoderar al postulante y automatizar ese desgaste. Un input → una candidatura optimizada → lista para enviar.
+ApplyBoost nació de un problema real en la búsqueda activa de empleo. Al intentar aplicar a múltiples ofertas laborales (20 a 50+ de golpe), me encontré sacrificando muchísimo tiempo adaptando manualmente mi currículum a cada una de ellas y redactando desde cero las Cover Letters (Cartas de Presentación) correspondientes.
 
-**¿El problema real?**
-Las agencias de reclutamiento ya tienen herramientas avanzadas. El candidato no. 
-Las soluciones actuales requieren mucha edición, dependen de que tú sepas hacer *prompts*, rompen los formatos visuales del PDF y alucinan información.
+Hoy en día, las agencias de reclutamiento y Recursos Humanos no están desarmadas; ya poseen herramientas avanzadas para filtrar y procesar candidatos. Esto implica que, si quisiéramos enfocar esto al sector B2B, entraríamos a un mercado altamente competitivo. El verdadero eslabón débil de la ecuación es el candidato, quien carece de una herramienta directa y potente.
 
-**Nuestra solución:**
+ApplyBoost automatiza este desgaste. Un input → una candidatura optimizada → lista para enviar.
+
+**La solución tecnológica:**
 ApplyBoost no es un creador de CVs ni un chatbot. Es un **optimizador de candidaturas**.
 Integramos todo en un flujo simple, separando la IA (que transforma) del código tradicional (que estructura y da formato) para cero alucinaciones.
 
@@ -23,7 +23,7 @@ Integramos todo en un flujo simple, separando la IA (que transforma) del código
 
 ## 2. Enlace a la Demo
 
-🔗 **Demo funcional actual:** [https://www.45.90.237.160.sslip.io/](https://www.45.90.237.160.sslip.io/)
+🔗 **Demo funcional actual:** <a href="https://www.45.90.237.160.sslip.io/" target="_blank">https://www.45.90.237.160.sslip.io/</a>
 
 *(Nota: El dominio `nic.eu.org` oficial se encuentra pendiente de aprobación. Se provee enlace transitorio al VPS enrutado con SSL)*.
 
