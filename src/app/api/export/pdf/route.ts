@@ -5,13 +5,14 @@ import { parseTextToStructuredCV } from "@/lib/llm/structuredParser";
 import { buildModernCvHtml } from "@/lib/render/cvTemplate";
 import { requireAuth } from "@/lib/auth/auth-utils";
 import { checkPaywall } from "@/lib/auth/paywall";
-import puppeteer from "puppeteer";
+import { getBrowser } from "@/lib/render/browserManager";
 
 /**
  * PDF Export API Route (SDD §7.3, §8.4)
  * Method: POST
  * Payload: { text: string, filename: string, templateMode: "simple" | "modern" }
  * Returns: PDF Binary or 401/402/500
+ * Optimized with Singleton Browser for VPS context.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -40,10 +41,8 @@ export async function POST(req: NextRequest) {
     // 3. Generar HTML según el template
     let html = "";
 
-    // IMPORTANTE: Si es Carta de Presentación (cl), NO usamos el parser estructurado
-    // aunque esté en modo modern, porque rompe el esquema del CV.
     if (templateMode === "modern" && type !== "cl") {
-      // MAGIC PARSER: Convert plain text to structured JSON using fast LLM
+      // MAGIC PARSER: Convert plain text (including user edits) to structured JSON
       console.log(`[PDF_EXPORT] Generating MODERN PDF for user ${effectiveUserId}...`);
       const structuredData = await parseTextToStructuredCV(text);
       html = buildModernCvHtml(structuredData);
@@ -86,16 +85,15 @@ export async function POST(req: NextRequest) {
         </html>`;
     }
       
-    // 4. Renderizar PDF con Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    });
+    // 4. Renderizar PDF con el Singleton Browser Manager
+    const browser = await getBrowser();
     
     let pdfBuffer: Buffer;
+    let page;
     try {
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      page = await browser.newPage();
+      // Usamos networkidle0 para asegurar que carguen fuentes externas si las hay
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
       const buffer = await page.pdf({ 
         format: "A4", 
         printBackground: true,
@@ -103,27 +101,27 @@ export async function POST(req: NextRequest) {
       });
       pdfBuffer = Buffer.from(buffer);
     } finally {
-      await browser.close();
+      if (page) await page.close();
+      // IMPORTANTE: NO CERRAMOS EL BROWSER (browser.close), dejamos que el Singleton lo maneje.
     }
 
     // 5. Post-Procesamiento (Consumir crédito y stats)
     const supabase = await createClient();
     
-    // Solo descontar si no es suscriptor
     const { data: exportData } = await supabase
       .from("user_exports")
       .select("exports_available, subscription_active")
       .eq("user_id", effectiveUserId)
       .single();
 
-    if (exportData && !exportData.subscription_active) {
+    if (exportData && !exportData.subscription_active && exportData.exports_available > 0) {
       await supabase
         .from("user_exports")
         .update({ exports_available: exportData.exports_available - 1 })
         .eq("user_id", effectiveUserId);
     }
 
-    // 6. Incrementar Estadísticas (No bloqueante con timeout)
+    // 6. Incrementar Estadísticas (No bloqueante)
     const updateStats = async () => {
       try {
         const adminClient = createAdminClient();
@@ -134,12 +132,7 @@ export async function POST(req: NextRequest) {
         console.error("[STATS_UPDATE_ERROR]", e);
       }
     };
-
-    // Race de 2 segundos para no bloquear la descarga
-    Promise.race([
-      updateStats(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
-    ]).catch(e => console.warn("[STATS_RACE_TIMEOUT]", e.message));
+    updateStats().catch(e => console.error("[STATS_ASYNC_ERROR]", e));
 
     // 7. Retornar PDF
     return new NextResponse(pdfBuffer as any, {
