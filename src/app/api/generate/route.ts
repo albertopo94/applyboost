@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
         "OCR_FAILED_TIMEOUT": { code: "service_unavailable", status: 503 },
         "OCR_FAILED_QUOTA": { code: "too_many_requests", status: 429 },
         "CV_PARSE_ERROR": { code: "unprocessable_entity", status: 422 },
-        "JOB_DESCRIPTION_RESTRICTED": { code: "restricted_domain", status: 403 }
+        "JOB_DESCRIPTION_RESTRICTED": { code: "restricted_domain", status: 403 },
+        "restricted_domain": { code: "restricted_domain", status: 403 }
       };
 
 
