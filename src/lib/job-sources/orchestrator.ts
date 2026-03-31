@@ -12,8 +12,7 @@ export async function extractJobDescription({
 }: JobOrchestratorInput): Promise<JobExtractResult> {
   const domain = classifyJobSourceDomain(url);
 
-  // --- THE IRON WALL (Fail-Fast) ---
-  // Any domain that doesn't share content freely is blocked here.
+  // --- THE IRON WALL (Fail-Fast: LinkedIn, InfoJobs) ---
   if (domain === "linkedin" || domain === "infojobs") {
     console.warn(`[ORCHESTRATOR][${requestId}] Iron Wall Block: Restricted domain '${domain}'. url: ${url}`);
     return {
@@ -26,13 +25,13 @@ export async function extractJobDescription({
     };
   }
 
-  // Temporary stub for everything else until we re-add extractors
-  console.log(`[ORCHESTRATOR][${requestId}] Passing to Generic (Legacy)...`);
-  return {
-    status: "source_unavailable",
-    domain: "generic",
-    extractor: "stub",
-    confidence: 0,
-    strategyPath: "legacy"
-  };
+  // --- OPTIMIZED ROUTES (Indeed Direct) ---
+  if (domain === "indeed") {
+    const { extractIndeed } = await import("./extractors/indeedExtractor");
+    return extractIndeed({ url, requestId });
+  }
+
+  // --- GENERIC CASCADE (Tier 1 -> Tier 2 Fallback) ---
+  const { extractGeneric } = await import("./extractors/genericExtractor");
+  return extractGeneric({ url, requestId });
 }
