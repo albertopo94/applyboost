@@ -1,8 +1,6 @@
 export type JobSourceDomain = "linkedin" | "indeed" | "infojobs" | "tecnoempleo" | "generic" | "unknown";
-
 export type JobExtractionStatus = "ok" | "blocked" | "unreadable" | "source_unavailable";
-
-export type JobExtractionStrategyPath = "B_ok" | "B_fail_C_ok" | "B_fail_C_fail_A" | "legacy";
+export type JobExtractionStrategyPath = "B_ok" | "B_fail_fast" | "B_fail_C_ok" | "B_fail_C_fail_A" | "legacy";
 
 export interface JobExtractResult {
   status: JobExtractionStatus;

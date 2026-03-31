@@ -121,7 +121,9 @@ export class GenerationService {
       cv_optimizado: llmResult.cv_optimizado,
       cv_explanation: llmResult.cv_explanation, // FIX: Direct pass to UI
       cover_letter: llmResult.cover_letter,
-      cover_letter_explanation: llmResult.cover_letter_explanation,
+      cover_letter_explanation: Array.isArray(llmResult.cover_letter_explanation) 
+        ? llmResult.cover_letter_explanation.join("\n") 
+        : llmResult.cover_letter_explanation,
       diff: llmResult.diff,
       keywords: llmResult.keywords,
       score_original: scoreOriginal,

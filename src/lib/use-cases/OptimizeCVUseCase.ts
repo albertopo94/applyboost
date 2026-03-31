@@ -44,7 +44,6 @@ export class OptimizeCVUseCase {
     const workPromise = (async (): Promise<GenerateResponse> => {
       let cvText = initialCvText;
 
-      // --- STEP 1: IDENTITY & QUOTA ---
       if (onProgress) await onProgress(1);
       const { user, userId, anonymousId } = await requireAuth({
         allowAnonymous: true,
@@ -52,8 +51,29 @@ export class OptimizeCVUseCase {
       });
 
       if (!user && anonymousId) {
-        const { hasExceeded } = await UsageService.hasExceededLimit(anonymousId, 3);
+        const hasExceeded = await UsageService.hasExceededLimit(anonymousId, 3);
         if (hasExceeded) throw new Error("QUOTA_EXCEEDED");
+      }
+
+      // --- STEP 1.5: IRON WALL (SCRAPING) ---
+      // We check the job URL first. If it's a restricted domain, we stop IMMEDIATELY
+      // before processing the CV (saving OCR/LLM costs).
+      let jobDescription = jobText || "";
+
+      if (jobUrl && jobUrl.trim().length > 0 && !jobDescription) {
+        const { extractJobDescription: extractJob } = await import("@/lib/job-sources/orchestrator");
+        const scrapResult = await extractJob({ url: jobUrl, requestId });
+
+        console.log(`[USE_CASE][${requestId}] Scraper Result: ${scrapResult.status} for domain ${scrapResult.domain}`);
+
+        if (scrapResult.status === "blocked") {
+          // Trigger the Iron Wall error
+          throw new Error("JOB_DESCRIPTION_RESTRICTED");
+        }
+
+        if (scrapResult.status === "ok" && scrapResult.text) {
+          jobDescription = scrapResult.text;
+        }
       }
 
       // --- STEP 2: CV PARSING (OCR) ---
@@ -87,7 +107,7 @@ export class OptimizeCVUseCase {
       const { buildMasterPrompt } = await import("@/lib/prompt/promptMaestro");
       const prompt = buildMasterPrompt({
         cvText,
-        jobDescription: jobText || "",
+        jobDescription: jobDescription, // Use the one from scraper or initial
         outputLanguage: outputLanguage // "auto" will be handled inside the prompt instructions
       });
 
@@ -112,7 +132,7 @@ export class OptimizeCVUseCase {
         userId: userId || undefined,
         anonymousId: !userId ? anonymousId : undefined,
         cvText,
-        jobText: jobText || "",
+        jobText: jobDescription,
         jobUrl: jobUrl || undefined,
         outputLanguage: outputLanguage === "auto" ? "es" : outputLanguage, // Default to es if prompt fails detection
         prompt,
@@ -123,17 +143,10 @@ export class OptimizeCVUseCase {
       // --- STEP 5: FINALIZING ---
       if (onProgress) await onProgress(5);
       
-      // Track usage for anonymous users
-      let updatedUsage = undefined;
-      if (!user && anonymousId) {
-        updatedUsage = await UsageService.trackAnonymousUsage(anonymousId);
-      }
-
       return {
         ...result,
-        usage_count: updatedUsage,
-        free_uses_remaining: updatedUsage !== undefined ? Math.max(0, 3 - updatedUsage) : undefined
       };
+
     })();
 
     return Promise.race([workPromise, timeoutPromise]);

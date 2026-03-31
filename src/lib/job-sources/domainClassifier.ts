@@ -5,6 +5,10 @@ const INDEED_HOSTS = ["indeed.com", "www.indeed.com", "it.indeed.com"];
 const INFOJOBS_HOSTS = ["infojobs.net", "www.infojobs.net", "infojobs.it", "www.infojobs.it"];
 const TECNOEMPLEO_HOSTS = ["tecnoempleo.com", "www.tecnoempleo.com"];
 
+/**
+ * Classifies a URL hostname into a known JobSourceDomain.
+ * Necessary for our Fail-Fast routing logic.
+ */
 export function classifyJobSourceDomain(url: string): JobSourceDomain {
   try {
     const hostname = new URL(url).hostname.toLowerCase();

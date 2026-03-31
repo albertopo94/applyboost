@@ -71,8 +71,10 @@ export async function POST(request: NextRequest) {
         "GLOBAL_TIMEOUT": { code: "gateway_timeout", status: 504 },
         "OCR_FAILED_TIMEOUT": { code: "service_unavailable", status: 503 },
         "OCR_FAILED_QUOTA": { code: "too_many_requests", status: 429 },
-        "CV_PARSE_ERROR": { code: "unprocessable_entity", status: 422 }
+        "CV_PARSE_ERROR": { code: "unprocessable_entity", status: 422 },
+        "JOB_DESCRIPTION_RESTRICTED": { code: "restricted_domain", status: 403 }
       };
+
 
       const errorKey = Object.keys(errorMap).find(k => error.message.includes(k)) || "internal_error";
       const mapped = errorMap[errorKey] || { code: "internal_error", status: 500 };
